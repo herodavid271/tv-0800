@@ -36,7 +36,9 @@ export function buildScreens(courses, config, todayISO, live, { breaks = false }
   const ordered = [...soon, ...later];
 
   if (breaks) {
-    const rot = upcoming.length > 0 ? [{ type: 'calendario' }, ...ordered.map((course) => ({ type: 'curso', course }))] : [];
+    const rot = upcoming.length > 0
+      ? [{ type: 'portada', variant: 'boletin' }, { type: 'calendario' }, ...ordered.map((course) => ({ type: 'curso', course }))]
+      : [];
     return rot.length ? rot : [{ type: 'vacio' }];
   }
 

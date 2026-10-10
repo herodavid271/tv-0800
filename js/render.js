@@ -8,8 +8,10 @@ export const esc = (s) =>
 
 const pad = (n) => String(n).padStart(2, '0');
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-const LOGO_WHITE = 'assets/logo-0800-blanco.png';
-const LOGO_INK = 'assets/logo-0800.png';
+// Logo: siempre en contraste con su fondo. Fondo oscuro = pastilla blanca con letras negras;
+// fondo claro (papel, sticker amarillo, recibo blanco) = pastilla negra con letras blancas.
+const LOGO_DARK = 'assets/logo-badge-blanco.png';
+const LOGO_LIGHT = 'assets/logo-badge-negro.png';
 const DEFAULT_MESSAGE = 'En vivo desde 0800 Hub';
 const WEEKDAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
 
@@ -30,7 +32,7 @@ const ticketCode = (iso) => {
   return `0800 ${pad(d)}${pad(m)} ${y}`;
 };
 
-const header = () => `<header class="top"><img src="${LOGO_WHITE}" alt="0800">${clock()}</header>`;
+const header = () => `<header class="top"><img src="${LOGO_DARK}" alt="0800">${clock()}</header>`;
 const footer = (message, todayISO) =>
   `<footer class="pie"><span><i></i>${esc(message || DEFAULT_MESSAGE)}</span><span>${formatLong(todayISO)}</span></footer>`;
 
@@ -72,7 +74,7 @@ export function calendarScreen(courses, todayISO) {
   return `<section class="screen c${g.weeks.length > 5 ? ' seis' : ''}">
 <svg class="nube n1" viewBox="0 0 300 150" aria-hidden="true">${CLOUD}</svg>
 <svg class="nube n2" viewBox="0 0 300 150" aria-hidden="true">${CLOUD}</svg>
-<div class="etq"><img src="${LOGO_INK}" alt="0800"></div>
+<div class="etq"><img src="${LOGO_LIGHT}" alt="0800"></div>
 <article class="hoja card">
 <div class="anillas" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
 <header><b class="d">${cap(MESES[month])}</b><span class="d">${year}</span></header>
@@ -138,11 +140,11 @@ export function dropoffScreen(courses, percent, todayISO) {
     .join('');
   const teeth = '<i></i>'.repeat(19);
   return `<section class="screen b dropoff">
-<img class="d3-logo" src="${LOGO_WHITE}" alt="0800">
+<img class="d3-logo" src="${LOGO_DARK}" alt="0800">
 <div class="ranura"></div>
 <div class="recibo-w"><div class="recibo-m">
 <div class="recibo${rows.length > 6 ? ' ap' : ''}">
-<img class="lg" src="${LOGO_INK}" alt="0800">
+<img class="lg" src="${LOGO_LIGHT}" alt="0800">
 <h1 class="d">Precio de hoy</h1>
 <p class="sub">Cursos presenciales</p>
 <hr>
@@ -162,6 +164,53 @@ ${barcode(40)}
 </section>`;
 }
 
+// ---------- Portada: todos los cursos con su miniatura en una sola pantalla ----------
+// cartelera = fondo oscuro (A) · boletin = fondo papel (C)
+const WEEK_ABBR = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+const weekdayAbbr = (iso) => {
+  const { y, m, d } = parseISO(iso);
+  return WEEK_ABBR[(new Date(y, m - 1, d).getDay() + 6) % 7];
+};
+const precioTxt = (c) => (c.basePrice > 0 ? formatPrice(c.basePrice) : '');
+
+export function portadaScreen(courses, variant, todayISO) {
+  const list = courses.filter((c) => !c.finished).sort((a, b) => a.startDate.localeCompare(b.startDate));
+  return variant === 'boletin' ? portadaBoletin(list, todayISO) : portadaCartelera(list, todayISO);
+}
+
+function portadaCartelera(list, todayISO) {
+  const tiles = list.slice(0, 6).map((c) => {
+    const { d } = parseISO(c.startDate);
+    return `<article class="tile">
+<div class="pic">${thumb(c.slug)}<span class="fb d">${esc(c.name)}</span></div>
+<div class="dia"><b class="d">${d}</b><small>${weekdayAbbr(c.startDate)}</small></div>
+<div class="bar"><b class="d">${esc(c.name)}</b><span>${precioTxt(c)}</span></div>
+</article>`;
+  }).join('');
+  return `<section class="screen b portada cartelera">
+<header class="ph-top"><div><p>Temporada presencial · ${esc(formatLong(todayISO))}</p><h1 class="d">Todos los cursos</h1></div><img src="${LOGO_DARK}" alt="0800"></header>
+<div class="grid">${tiles}</div>
+</section>`;
+}
+
+function portadaBoletin(list, todayISO) {
+  const filas = list.slice(0, 6).map((c) => {
+    const { d } = parseISO(c.startDate);
+    const cupos = c.availableSeats != null ? `<small>${Number(c.availableSeats)} cupos disponibles</small>` : '';
+    return `<div class="fila">
+<div class="dia"><b class="d">${d}</b><span>${weekdayAbbr(c.startDate)}</span></div>
+<div class="pic">${thumb(c.slug)}<span class="fb d">${esc(c.name)}</span></div>
+<div class="nom"><b class="d">${esc(c.name)}</b>${cupos}</div>
+<div class="pre d">${precioTxt(c)}</div>
+</div>`;
+  }).join('');
+  return `<section class="screen c portada boletin">
+<header class="ph-top"><h1 class="d">Cursos presenciales</h1><div class="ed"><p>Edición</p><b class="d">${esc(formatLong(todayISO))}</b></div><img src="${LOGO_LIGHT}" alt="0800"></header>
+<div class="filas">${filas}</div>
+<footer class="pie-p">Reserva con el equipo 0800 al salir</footer>
+</section>`;
+}
+
 // ---------- Reserva con Cashea (recibo: precio de hoy y la inicial que se paga para reservar) ----------
 export function casheaScreen(courses, percent, initialPercent, todayISO) {
   const rows = buildCasheaRows(courses, percent, initialPercent).slice(0, 8);
@@ -170,11 +219,11 @@ export function casheaScreen(courses, percent, initialPercent, todayISO) {
     .join('');
   const teeth = '<i></i>'.repeat(19);
   return `<section class="screen b dropoff cashea">
-<img class="d3-logo" src="${LOGO_WHITE}" alt="0800">
+<img class="d3-logo" src="${LOGO_DARK}" alt="0800">
 <div class="ranura"></div>
 <div class="recibo-w"><div class="recibo-m">
 <div class="recibo${rows.length > 6 ? ' ap' : ''}">
-<img class="lg" src="${LOGO_INK}" alt="0800">
+<img class="lg" src="${LOGO_LIGHT}" alt="0800">
 <h1 class="d">Reserva hoy</h1>
 <p class="sub">Precio de hoy e inicial con Cashea</p>
 <hr>
@@ -219,13 +268,13 @@ ${footer(config.message, todayISO)}
 }
 
 export function emptyScreen(text) {
-  return `<section class="screen b vacio"><img src="${LOGO_WHITE}" alt="0800"><h1 class="d">${esc(text)}</h1></section>`;
+  return `<section class="screen b vacio"><img src="${LOGO_DARK}" alt="0800"><h1 class="d">${esc(text)}</h1></section>`;
 }
 
 // ---------- Competencia (póster) ----------
 export function leaderboardScreen(model) {
   if (!model.leader) {
-    return `<section class="screen b competencia vacio"><img src="${LOGO_INK}" alt="0800"><h1 class="d">Aún no hay participantes</h1></section>`;
+    return `<section class="screen b competencia vacio"><img src="${LOGO_DARK}" alt="0800"><h1 class="d">Aún no hay participantes</h1></section>`;
   }
   const { title, leader, others, more, recent } = model;
   const len = [...leader.name].length;
@@ -237,7 +286,7 @@ export function leaderboardScreen(model) {
   const mas = more > 0 ? `<p class="mas">+${more} más</p>` : '';
   const cinta = recent ? `<div class="cinta d">${esc(recent.name)} acaba de sumar un punto</div>` : '';
   return `<section class="screen b competencia">
-<img class="logo" src="${LOGO_INK}" alt="0800">
+<img class="logo" src="${LOGO_DARK}" alt="0800">
 <p class="curso">${title ? `Competencia · ${esc(title)}` : 'Competencia'}</p>
 <p class="uno d">1</p>
 <div class="lid"><b class="d${size}">${esc(leader.name)}</b><span>${pts}</span></div>

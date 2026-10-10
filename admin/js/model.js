@@ -12,11 +12,12 @@ const pinned = (live) => (live?.state?.mode === 'pin' ? live.state.pin_screen : 
 export const MAIN_BUTTONS = [
   { id: 'breaks', label: 'Secuencia de breaks', sub: 'Calendario y cursos rotando' },
   { id: 'competencia', label: 'Competencia en vivo', sub: 'Leaderboard' },
-  { id: 'cierre:10', label: 'Secuencia de cierre', sub: 'Drop 10 %, 30 % y Cashea' },
+  { id: 'cierre:portada', label: 'Secuencia de cierre', sub: 'Portada, drop 10 %, 30 % y Cashea' },
 ];
 
 // Pasos de la secuencia de cierre, en orden.
 export const CIERRE_STEPS = [
+  { id: 'cierre:portada', label: 'Portada de cursos', sub: 'Todos los cursos con su miniatura' },
   { id: 'cierre:10', label: 'Drop −10 %', sub: 'Precio con 10 % de descuento' },
   { id: 'cierre:30', label: 'Drop −30 %', sub: 'Precio con 30 % de descuento' },
   { id: 'cierre:cashea', label: 'Inicial 40 % con Cashea', sub: 'Lo que pagan para reservar' },
@@ -28,11 +29,11 @@ export function mainButtons(live) {
   const pin = pinned(live);
   return MAIN_BUTTONS.map((b) => ({
     ...b,
-    active: b.id === 'cierre:10' ? isCierre(pin) : pin === b.id,
+    active: b.id === 'cierre:portada' ? isCierre(pin) : pin === b.id,
   }));
 }
 
-// Paso actual de la secuencia de cierre (0 a 2) o -1 si no está activa.
+// Paso actual de la secuencia de cierre (0 a 3) o -1 si no está activa.
 export function cierreIndex(live) {
   return CIERRE_STEPS.findIndex((st) => st.id === pinned(live));
 }

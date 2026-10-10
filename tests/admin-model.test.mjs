@@ -36,14 +36,15 @@ test('mainButtons: breaks, competencia en vivo y secuencia de cierre', () => {
   assert.deepEqual(ids(live()), []);
   assert.deepEqual(ids(live({ mode: 'pin', pin_screen: 'breaks' })), ['Secuencia de breaks']);
   assert.deepEqual(ids(live({ mode: 'pin', pin_screen: 'competencia' })), ['Competencia en vivo']);
-  for (const p of ['cierre:10', 'cierre:30', 'cierre:cashea']) assert.deepEqual(ids(live({ mode: 'pin', pin_screen: p })), ['Secuencia de cierre']);
+  for (const p of ['cierre:portada', 'cierre:10', 'cierre:30', 'cierre:cashea']) assert.deepEqual(ids(live({ mode: 'pin', pin_screen: p })), ['Secuencia de cierre']);
 });
 
 test('cierreIndex: 10 %, 30 % y Cashea en orden', () => {
-  assert.deepEqual(CIERRE_STEPS.map((x) => x.id), ['cierre:10', 'cierre:30', 'cierre:cashea']);
+  assert.deepEqual(CIERRE_STEPS.map((x) => x.id), ['cierre:portada', 'cierre:10', 'cierre:30', 'cierre:cashea']);
   assert.equal(cierreIndex(live()), -1);
-  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'cierre:10' })), 0);
-  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'cierre:cashea' })), 2);
+  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'cierre:portada' })), 0);
+  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'cierre:10' })), 1);
+  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'cierre:cashea' })), 3);
   assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'calendario' })), -1);
 });
 

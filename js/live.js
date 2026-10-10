@@ -56,6 +56,9 @@ export function resolveScreen(live, courses, config, todayISO) {
 
   if (s.mode === 'pin' && s.pin_screen) {
     const pin = s.pin_screen;
+    if (pin === 'cierre:portada' && visible.some((c) => !c.finished)) {
+      return { screen: { type: 'portada', variant: 'cartelera' }, locked: true, key: `pin:${pin}` };
+    }
     const cierre = /^cierre:(10|30)$/.exec(pin);
     if (cierre && buildPriceRows(visible, Number(cierre[1])).length > 0) {
       return { screen: { type: 'dropoff', percent: Number(cierre[1]) }, locked: true, key: `pin:${pin}` };

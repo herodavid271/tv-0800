@@ -175,7 +175,7 @@ test('emptyScreen: logo blanco y texto escapado', () => {
   const h = emptyScreen('Próximamente');
   assert.match(h, /Próximamente/);
   assert.match(h, /class="screen b/);
-  assert.match(h, /assets\/logo-0800-blanco\.png/);
+  assert.match(h, /assets\/logo-badge-blanco\.png/);
   assert.match(emptyScreen('<x>'), /&lt;x&gt;/);
 });
 
@@ -192,7 +192,7 @@ const lbModel = (over = {}) => ({
 test('leaderboardScreen: líder, filas y título', () => {
   const h = leaderboardScreen(lbModel());
   assert.match(h, /class="screen b competencia"/);
-  assert.match(h, /assets\/logo-0800\.png/);
+  assert.match(h, /assets\/logo-badge-blanco\.png/);
   assert.match(h, /Competencia · Delega con IA/);
   assert.match(h, /<b class="d">Ana M\.<\/b><span>7 puntos<\/span>/);
   assert.match(h, /Los que vienen detrás/);
@@ -253,4 +253,19 @@ test('casheaScreen: precio de hoy, inicial y 40 %', async () => {
   assert.ok(h.includes('$28.00'));
   assert.ok(h.includes('40%'));
   assert.ok(!h.includes('<s>$99.99'));
+});
+
+test('portadaScreen: cartelera (oscura) y boletín (papel), todos los cursos vigentes, logo del fondo correcto', async () => {
+  const { portadaScreen } = await import('../js/render.js');
+  const cs = [course({ slug: 'a', name: 'Alfa', startDate: '2026-10-22' }), course({ slug: 'b', name: 'Beta', startDate: '2026-10-15' }), course({ slug: 'z', name: 'Vieja', startDate: '2026-01-01', finished: true })];
+  const car = portadaScreen(cs, 'cartelera', TODAY);
+  assert.ok(car.includes('portada cartelera'));
+  assert.ok(car.includes('logo-badge-blanco.png'));
+  assert.equal((car.match(/class="tile"/g) || []).length, 2);
+  assert.ok(car.indexOf('Beta') < car.indexOf('Alfa'));
+  assert.ok(!car.includes('Vieja'));
+  const bol = portadaScreen(cs, 'boletin', TODAY);
+  assert.ok(bol.includes('portada boletin'));
+  assert.ok(bol.includes('logo-badge-negro.png'));
+  assert.equal((bol.match(/class="fila"/g) || []).length, 2);
 });

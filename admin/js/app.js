@@ -7,7 +7,7 @@ const LIVE_MS = 2000;
 const EDITIONS_MS = 60000;
 const CONFIRM_MS = 3000;
 const GENERIC_ERROR = 'No se pudo, reintenta';
-const LOGO = '../assets/logo-0800-blanco.png';
+const LOGO = '../assets/logo-badge-blanco.png'; // pantalla oscura: pastilla blanca
 
 const ICONS = {
   pantalla: '<rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path>',
@@ -274,7 +274,7 @@ export function start(api, root) {
         n.disabled = busy('pin');
         n.addEventListener('click', async () => {
           await actions.pin(b.id);
-          if (b.id === 'cierre:10') { S.view = 'cierre'; showApp(); }
+          if (b.id === 'cierre:portada') { S.view = 'cierre'; showApp(); }
         });
         dyn.main.appendChild(n);
       }

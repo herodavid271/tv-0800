@@ -2,7 +2,7 @@ import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient, loadSnapshot, pickCourses, normalizeConfig } from './data.js';
 import { buildScreens, findScreenIndex } from './rotation.js';
 import { localISO } from './dates.js';
-import { calendarScreen, courseScreen, dropoffScreen, casheaScreen, announcementScreen, emptyScreen, leaderboardScreen, clockText } from './render.js';
+import { calendarScreen, courseScreen, dropoffScreen, casheaScreen, portadaScreen, announcementScreen, emptyScreen, leaderboardScreen, clockText } from './render.js';
 import { DEFAULT_LIVE, normalizeLive, resolveScreen, buildLeaderboard, liveSignature, isBreaks } from './live.js';
 
 const REFRESH_MS = 5 * 60 * 1000;
@@ -61,6 +61,7 @@ function html(screen) {
     case 'calendario': return calendarScreen(visibleCourses(), today);
     case 'curso': return courseScreen(screen.course, today, { message: state.config.message });
     case 'dropoff': return dropoffScreen(visibleCourses(), screen.percent, today);
+    case 'portada': return portadaScreen(visibleCourses(), screen.variant, today);
     case 'cashea': return casheaScreen(visibleCourses(), screen.percent, screen.initial, today);
     case 'competencia': return leaderboardScreen(buildLeaderboard(state.live, visibleCourses(), today));
     case 'conectando': return emptyScreen('Conectando…');

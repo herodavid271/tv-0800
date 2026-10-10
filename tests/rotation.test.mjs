@@ -149,10 +149,11 @@ test('buildScreens: sin cursos próximos pero con jugadores sale solo la compete
   assert.deepEqual(buildScreens([], withAnn, '2026-10-10', liveWith(1)).map((x) => x.type), ['anuncio', 'competencia']);
 });
 
-test('buildScreens: secuencia de breaks solo calendario y cursos, sin anuncio, competencia ni dropoff', () => {
+test('buildScreens: secuencia de breaks = portada boletín, calendario y cursos; sin anuncio, competencia ni dropoff', () => {
   const cs = [priced('b', '2026-10-16'), priced('c', '2026-10-22')];
   const cfg = dcfg({ announcement_title: 'Hola' });
   const s = buildScreens(cs, cfg, '2026-10-10', { players: [{ id: 'x' }] }, { breaks: true });
-  assert.deepEqual(s.map((x) => x.type), ['calendario', 'curso', 'curso']);
+  assert.deepEqual(s.map((x) => x.type), ['portada', 'calendario', 'curso', 'curso']);
+  assert.equal(s[0].variant, 'boletin');
   assert.deepEqual(buildScreens([], cfg, '2026-10-10', null, { breaks: true }), [{ type: 'vacio' }]);
 });

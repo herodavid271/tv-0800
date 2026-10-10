@@ -193,3 +193,10 @@ test('isBreaks y resolveScreen: breaks no fija pantalla', async () => {
   assert.equal(isBreaks(normalizeLive(raw())), false);
   assert.equal(resolveScreen(live, [course('a', '2026-10-15')], cfg(), TODAY), null);
 });
+
+test('resolveScreen: cierre:portada fija la portada cartelera si hay cursos vigentes', () => {
+  const cs = [course('a', '2026-10-15')];
+  const r = resolveScreen(normalizeLive(raw({ mode: 'pin', pin_screen: 'cierre:portada' })), cs, cfg(), TODAY);
+  assert.deepEqual(r, { screen: { type: 'portada', variant: 'cartelera' }, locked: true, key: 'pin:cierre:portada' });
+  assert.equal(resolveScreen(normalizeLive(raw({ mode: 'pin', pin_screen: 'cierre:portada' })), [course('a', '2026-10-15', { finished: true })], cfg(), TODAY), null);
+});
