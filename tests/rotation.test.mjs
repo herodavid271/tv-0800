@@ -40,10 +40,11 @@ test('buildScreens: el curso de hoy o mañana pasa primero', () => {
   assert.deepEqual(s.filter((x) => x.type === 'curso').map((x) => x.course.slug), ['tomorrow', 'late']);
 });
 
-test('buildScreens: cursos finalizados van al final', () => {
+test('buildScreens: los cursos finalizados no tienen pantalla propia', () => {
   const courses = [course('old', '2026-10-01', { finished: true }), course('new', '2026-10-15')];
   const s = buildScreens(courses, DEFAULT_CONFIG, '2026-10-10');
-  assert.deepEqual(s.filter((x) => x.type === 'curso').map((x) => x.course.slug), ['new', 'old']);
+  assert.deepEqual(s.filter((x) => x.type === 'curso').map((x) => x.course.slug), ['new']);
+  assert.deepEqual(s.map((x) => x.type), ['calendario', 'curso', 'resumen']);
 });
 
 test('buildScreens respeta hidden_courses y screens de la config', () => {

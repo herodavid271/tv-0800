@@ -26,7 +26,7 @@ export function buildScreens(courses, config, todayISO) {
 
   const soon = upcoming.filter((c) => daysUntil(c.startDate, todayISO) <= 1);
   const later = upcoming.filter((c) => daysUntil(c.startDate, todayISO) > 1);
-  const ordered = [...soon, ...later, ...visible.filter((c) => c.finished)];
+  const ordered = [...soon, ...later];
 
   const screens = [];
   for (const name of config.screens) {
