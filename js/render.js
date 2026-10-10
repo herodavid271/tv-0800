@@ -165,7 +165,7 @@ ${barcode(40)}
 // ---------- Anuncio libre (tiquete) ----------
 export function announcementScreen(config, todayISO) {
   const title = config.announcement_title ?? '';
-  const size = title.length > 60 ? ' largo' : title.length > 32 ? ' medio' : '';
+  const size = title.length > 64 ? ' largo' : title.length > 40 ? ' medio' : '';
   const date = config.announcement_date;
   let talon = '';
   if (date) {

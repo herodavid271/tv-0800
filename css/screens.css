@@ -158,6 +158,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b .aviso-t h1 { font-size: 150px; line-height: 0.9; text-wrap: balance; }
 .b .aviso-t h1.medio { font-size: 112px; }
 .b .aviso-t h1.largo { font-size: 80px; }
+.b .aviso-t.solo h1 { font-size: 170px; }
+.b .aviso-t.solo h1.medio { font-size: 130px; }
+.b .aviso-t.solo h1.largo { font-size: 100px; }
 .b .aviso-t .msg p { margin-top: 36px; font-size: 40px; font-weight: 700; }
 .b .aviso-t .talon { border-left: 5px dashed var(--ink); padding: 70px 44px 50px; display: flex; flex-direction: column; }
 .b .aviso-t .talon .n { font-size: 210px; line-height: 0.8; letter-spacing: -0.05em; }
