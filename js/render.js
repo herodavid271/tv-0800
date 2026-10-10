@@ -189,3 +189,30 @@ ${footer(config.message, todayISO)}
 export function emptyScreen(text) {
   return `<section class="screen b vacio"><img src="${LOGO_WHITE}" alt="0800"><h1 class="d">${esc(text)}</h1></section>`;
 }
+
+// ---------- Competencia (póster) ----------
+export function leaderboardScreen(model) {
+  if (!model.leader) {
+    return `<section class="screen b competencia vacio"><img src="${LOGO_INK}" alt="0800"><h1 class="d">Aún no hay participantes</h1></section>`;
+  }
+  const { title, leader, others, more, recent } = model;
+  const len = [...leader.name].length;
+  const size = len > 16 ? ' s' : len > 10 ? ' m' : '';
+  const pts = leader.points === 1 ? '1 punto' : `${leader.points} puntos`;
+  const rows = others
+    .map((o, i) => `<div class="fila${o.isRecent ? ' nuevo' : ''}" style="--i:${i}"><span class="r d">${o.rank}</span><span class="nom">${esc(o.name)}</span><span class="pts d">${o.points}</span></div>`)
+    .join('');
+  const mas = more > 0 ? `<p class="mas">+${more} más</p>` : '';
+  const cinta = recent ? `<div class="cinta d">${esc(recent.name)} acaba de sumar un punto</div>` : '';
+  return `<section class="screen b competencia">
+<img class="logo" src="${LOGO_INK}" alt="0800">
+<p class="curso">${title ? `Competencia · ${esc(title)}` : 'Competencia'}</p>
+<p class="uno d">1</p>
+<div class="lid"><b class="d${size}">${esc(leader.name)}</b><span>${pts}</span></div>
+<aside class="panel">
+<h2 class="d">Los que vienen detrás</h2>
+${rows}${mas}
+</aside>
+${cinta}
+</section>`;
+}

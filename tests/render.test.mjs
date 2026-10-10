@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  esc, flap, calendarScreen, courseScreen, dropoffScreen, announcementScreen, emptyScreen,
+  esc, flap, calendarScreen, courseScreen, dropoffScreen, announcementScreen, emptyScreen, leaderboardScreen,
 } from '../js/render.js';
 import { buildPriceRows, formatPrice } from '../js/pricing.js';
 import { DEFAULT_CONFIG } from '../js/data.js';
@@ -177,4 +177,70 @@ test('emptyScreen: logo blanco y texto escapado', () => {
   assert.match(h, /class="screen b/);
   assert.match(h, /assets\/logo-0800-blanco\.png/);
   assert.match(emptyScreen('<x>'), /&lt;x&gt;/);
+});
+
+const lbModel = (over = {}) => ({
+  title: 'Delega con IA',
+  leader: { name: 'Ana M.', points: 7 },
+  others: [
+    { rank: 2, name: 'Carlos R.', points: 6, isRecent: false },
+    { rank: 3, name: 'Luisa P.', points: 1, isRecent: false },
+  ],
+  more: 0, recent: null, ...over,
+});
+
+test('leaderboardScreen: líder, filas y título', () => {
+  const h = leaderboardScreen(lbModel());
+  assert.match(h, /class="screen b competencia"/);
+  assert.match(h, /assets\/logo-0800\.png/);
+  assert.match(h, /Competencia · Delega con IA/);
+  assert.match(h, /<b class="d">Ana M\.<\/b><span>7 puntos<\/span>/);
+  assert.match(h, /Los que vienen detrás/);
+  assert.equal((h.match(/class="fila/g) || []).length, 2);
+  assert.match(h, /<span class="nom">Carlos R\.<\/span>/);
+  assert.match(leaderboardScreen(lbModel({ title: null })), /<p class="curso">Competencia<\/p>/);
+});
+
+test('leaderboardScreen: escapa nombres y título', () => {
+  const h = leaderboardScreen(lbModel({
+    title: '<i>t</i>', leader: { name: '<b>x</b>', points: 2 },
+    others: [{ rank: 2, name: '"><img>', points: 1, isRecent: false }],
+    recent: { name: '<s>' },
+  }));
+  assert.doesNotMatch(h, /<i>t|<b>x|<img>|<s>/);
+  assert.match(h, /&lt;b&gt;x&lt;\/b&gt;/);
+});
+
+test('leaderboardScreen: punto singular y plural', () => {
+  assert.match(leaderboardScreen(lbModel({ leader: { name: 'A', points: 1 } })), /1 punto</);
+  assert.match(leaderboardScreen(lbModel({ leader: { name: 'A', points: 0 } })), /0 puntos</);
+});
+
+test('leaderboardScreen: +N más solo si hay más', () => {
+  assert.match(leaderboardScreen(lbModel({ more: 5 })), /\+5 más/);
+  assert.doesNotMatch(leaderboardScreen(lbModel()), /más/);
+});
+
+test('leaderboardScreen: cinta y fila nuevo solo con reciente', () => {
+  const none = leaderboardScreen(lbModel());
+  assert.doesNotMatch(none, /cinta|nuevo|acaba de sumar/);
+  const h = leaderboardScreen(lbModel({
+    others: [{ rank: 2, name: 'Carlos R.', points: 6, isRecent: true }, { rank: 3, name: 'L', points: 1, isRecent: false }],
+    recent: { name: 'Carlos R.' },
+  }));
+  assert.match(h, /Carlos R\. acaba de sumar un punto/);
+  assert.equal((h.match(/fila nuevo/g) || []).length, 1);
+});
+
+test('leaderboardScreen: vacío', () => {
+  const h = leaderboardScreen({ title: null, leader: null, others: [], more: 0, recent: null });
+  assert.match(h, /Aún no hay participantes/);
+  assert.match(h, /class="screen b competencia vacio"/);
+  assert.doesNotMatch(h, /panel/);
+});
+
+test('leaderboardScreen: nombre largo del líder baja de tamaño', () => {
+  assert.doesNotMatch(leaderboardScreen(lbModel({ leader: { name: 'x'.repeat(10), points: 1 } })), /class="d (m|s)"/);
+  assert.match(leaderboardScreen(lbModel({ leader: { name: 'x'.repeat(11), points: 1 } })), /<b class="d m">/);
+  assert.match(leaderboardScreen(lbModel({ leader: { name: 'x'.repeat(17), points: 1 } })), /<b class="d s">/);
 });

@@ -180,6 +180,30 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b.vacio img { height: 96px; margin-bottom: 48px; }
 .b.vacio h1 { font-size: 120px; text-align: center; animation: m-entra 0.7s 0.2s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
 
+/* ---------- Competencia (póster) ---------- */
+.b.competencia { background: #ffe200; color: #0e0e0e; }
+.b.competencia .logo { position: absolute; left: 64px; top: 44px; height: 58px; }
+.b.competencia .curso { position: absolute; left: 64px; top: 130px; font-size: 34px; font-weight: 800; }
+.b.competencia .uno { position: absolute; left: 40px; top: 170px; font-size: 640px; line-height: 0.8; letter-spacing: -0.06em; }
+.b.competencia .lid { position: absolute; left: 64px; top: 692px; width: 960px; }
+.b.competencia .lid b { display: block; font-size: 190px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b.competencia .lid b.m { font-size: 130px; }
+.b.competencia .lid b.s { font-size: 92px; }
+.b.competencia .lid span { display: inline-block; margin-top: 14px; padding: 12px 30px 6px; background: #0e0e0e; color: #ffe200; font-family: var(--disp); font-size: 66px; }
+.b.competencia .panel { position: absolute; left: 1060px; top: 0; width: 860px; height: 1080px; padding: 90px 64px 0; background: #0e0e0e; color: #fff; overflow: hidden; }
+.b.competencia .panel h2 { font-size: 54px; margin-bottom: 26px; }
+.b.competencia .fila { display: flex; align-items: center; height: 130px; border-top: 3px solid #3a3a3a; animation: l-entra 0.5s calc(var(--i, 0) * 0.07s) cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.b.competencia .r { width: 120px; flex: none; font-size: 100px; color: #ffe200; padding-top: 8px; }
+.b.competencia .nom { flex: 1; min-width: 0; font-size: 58px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b.competencia .pts { flex: none; margin-left: 24px; font-size: 70px; color: #ffe200; padding-top: 6px; }
+.b.competencia .fila.nuevo { background: #a3243b; margin: 0 -24px; padding: 0 24px; }
+.b.competencia .fila.nuevo .r, .b.competencia .fila.nuevo .pts { color: #fff; }
+.b.competencia .mas { height: 60px; line-height: 60px; border-top: 3px solid #3a3a3a; font-size: 34px; font-weight: 800; color: #a8a8a8; }
+.b.competencia .cinta { position: absolute; left: 0; bottom: 0; width: 1060px; height: 70px; background: #0e0e0e; display: flex; align-items: center; padding-left: 64px; color: #ffe200; font-size: 34px; white-space: nowrap; overflow: hidden; animation: l-pop 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.b.competencia.vacio { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.b.competencia.vacio img { height: 96px; margin-bottom: 48px; }
+.b.competencia.vacio h1 { font-size: 120px; text-align: center; animation: m-entra 0.7s 0.2s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+
 /* ---------- Animaciones (solo transform y opacity) ---------- */
 @keyframes fill { to { transform: scaleX(1); } }
 @keyframes b-gira { 0% { transform: perspective(500px) rotateX(-88deg); opacity: 0; } 55% { transform: perspective(500px) rotateX(16deg); opacity: 1; } 100% { transform: none; opacity: 1; } }
@@ -190,6 +214,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 @keyframes c-deriva { from { transform: translateX(-30px); } to { transform: translateX(40px); } }
 @keyframes d-imprime { from { transform: translateY(-100%); } to { transform: none; } }
 @keyframes d-cae { from { transform: translateY(-320px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes l-entra { from { transform: translateX(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes l-pop { 0% { transform: scale(0.7); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: none; opacity: 1; } }
 @keyframes m-entra { from { transform: scale(0.8); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* Modo lite y movimiento reducido: solo cortes, la barra de progreso se queda */
