@@ -190,3 +190,17 @@ test('createClient funciona sin AbortSignal.timeout (TVs viejos)', async () => {
     AbortSignal.timeout = original;
   }
 });
+
+test('createClient.live() hace POST a rpc/tv_live con cuerpo {}', async () => {
+  const calls = [];
+  const client = createClient({
+    url: 'https://x.supabase.co', key: 'KEY',
+    fetchImpl: jsonFetch((url, init) => { calls.push({ url, init }); return { state: {}, players: [] }; }),
+  });
+  assert.deepEqual(await client.live(), { state: {}, players: [] });
+  assert.equal(calls[0].url, 'https://x.supabase.co/rest/v1/rpc/tv_live');
+  assert.equal(calls[0].init.method, 'POST');
+  assert.equal(calls[0].init.body, '{}');
+  assert.equal(calls[0].init.headers.apikey, 'KEY');
+  assert.ok(calls[0].init.signal instanceof AbortSignal);
+});

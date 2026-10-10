@@ -126,3 +126,25 @@ test('findScreenIndex: los cursos se distinguen por slug', () => {
   const k = (slug) => ({ type: 'curso', course: { slug } });
   assert.equal(findScreenIndex([k('a'), k('b')], 1, [k('b'), k('a')]), 0);
 });
+
+const liveWith = (n) => ({ state: {}, players: Array.from({ length: n }, (_, i) => ({ id: `p${i}`, name: `J${i}`, points: 1, lastScoredAt: null })), serverTime: null });
+const discountOn = { ...DEFAULT_CONFIG, discount_active: true, discount_percent: 20 };
+
+test('buildScreens: competencia después de los cursos y antes del dropoff', () => {
+  const courses = [course('b', '2026-10-16', { basePrice: 100 })];
+  const s = buildScreens(courses, discountOn, '2026-10-10', liveWith(2));
+  assert.deepEqual(s.map((x) => x.type), ['calendario', 'curso', 'competencia', 'dropoff']);
+});
+
+test('buildScreens: sin jugadores o sin live no hay competencia', () => {
+  const courses = [course('b', '2026-10-16')];
+  assert.ok(!buildScreens(courses, DEFAULT_CONFIG, '2026-10-10', liveWith(0)).some((x) => x.type === 'competencia'));
+  assert.ok(!buildScreens(courses, DEFAULT_CONFIG, '2026-10-10', null).some((x) => x.type === 'competencia'));
+  assert.ok(!buildScreens(courses, DEFAULT_CONFIG, '2026-10-10').some((x) => x.type === 'competencia'));
+});
+
+test('buildScreens: sin cursos próximos pero con jugadores sale solo la competencia', () => {
+  assert.deepEqual(buildScreens([], DEFAULT_CONFIG, '2026-10-10', liveWith(1)), [{ type: 'competencia' }]);
+  const withAnn = { ...DEFAULT_CONFIG, announcement_title: 'Hola' };
+  assert.deepEqual(buildScreens([], withAnn, '2026-10-10', liveWith(1)).map((x) => x.type), ['anuncio', 'competencia']);
+});

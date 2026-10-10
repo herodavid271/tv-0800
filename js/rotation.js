@@ -28,7 +28,7 @@ export function seatState(course) {
   return 'ok';
 }
 
-export function buildScreens(courses, config, todayISO) {
+export function buildScreens(courses, config, todayISO, live) {
   const visible = courses.filter((c) => !config.hidden_courses.includes(c.slug));
   const upcoming = visible.filter((c) => !c.finished);
   const soon = upcoming.filter((c) => daysUntil(c.startDate, todayISO) <= 1);
@@ -44,6 +44,8 @@ export function buildScreens(courses, config, todayISO) {
       else if (name === 'cursos') ordered.forEach((course) => screens.push({ type: 'curso', course }));
     }
   }
+
+  if (live?.players?.length > 0) screens.push({ type: 'competencia' });
 
   const percent = config.discount_percent;
   if (

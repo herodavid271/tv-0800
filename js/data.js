@@ -88,6 +88,7 @@ export function createClient({ url, key, fetchImpl = (...a) => fetch(...a) }) {
   }
   return {
     editions: () => call('rpc/tv_ediciones', { method: 'POST', body: '{}' }),
+    live: () => call('rpc/tv_live', { method: 'POST', body: '{}' }),
     config: async () => {
       const rows = await call('tv_config?id=eq.1&select=*');
       return rows[0] ?? null;
