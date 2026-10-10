@@ -20,7 +20,7 @@ const storage = (() => {
 })();
 
 const state = { courses: [], config: normalizeConfig(null), online: true, loaded: false, screens: [], index: 0,
-  live: DEFAULT_LIVE, breaks: false, locked: null, resume: null, lastSig: null };
+  live: DEFAULT_LIVE, breaks: false, price: null, locked: null, resume: null, lastSig: null };
 let timer = null;
 let firstLoad = true;
 
@@ -54,19 +54,29 @@ function rebuild() {
   else state.index = findScreenIndex(prev, prevIndex, state.screens);
 }
 
-function html(screen) {
+// Pantalla de precio pintada justo antes (o null): permite encadenar los pasos del cierre sin reimprimir el recibo.
+const priceCtx = (screen) =>
+  screen.type === 'dropoff' ? { type: 'dropoff', percent: screen.percent } : screen.type === 'cashea' ? { type: 'cashea' } : null;
+
+function build(screen, prev) {
   const today = localISO();
   switch (screen.type) {
     case 'anuncio': return announcementScreen(state.config, today);
     case 'calendario': return calendarScreen(visibleCourses(), today);
     case 'curso': return courseScreen(screen.course, today, { message: state.config.message });
-    case 'dropoff': return dropoffScreen(visibleCourses(), screen.percent, today);
+    case 'dropoff': return dropoffScreen(visibleCourses(), screen.percent, today, { prev });
     case 'portada': return portadaScreen(visibleCourses(), screen.variant, today);
-    case 'cashea': return casheaScreen(visibleCourses(), screen.percent, screen.initial, today);
+    case 'cashea': return casheaScreen(visibleCourses(), screen.percent, screen.initial, today, { prev });
     case 'competencia': return leaderboardScreen(buildLeaderboard(state.live, visibleCourses(), today));
     case 'conectando': return emptyScreen('Conectando…');
     default: return emptyScreen('Próximamente');
   }
+}
+
+function html(screen) {
+  const out = build(screen, state.price);
+  state.price = priceCtx(screen);
+  return out;
 }
 
 const lockSigOf = (res) => JSON.stringify([res.key, visibleCourses().map((c) => [c.slug, c.availableSeats, c.basePrice, c.finished])]);

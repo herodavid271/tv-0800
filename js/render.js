@@ -132,36 +132,106 @@ ${footer(opts.message, todayISO)}
 </section>`;
 }
 
-// ---------- Dropoff de precio (recibo) ----------
-export function dropoffScreen(courses, percent, todayISO) {
-  const rows = buildPriceRows(courses, percent).slice(0, 8);
-  const lis = rows
-    .map((r) => `<li><span>${esc(r.name)}</span><s>${formatPrice(r.before)}</s><b>${formatPrice(r.after)}</b></li>`)
+// ---------- Recibos de precio: dropoff y Cashea ----------
+// Solo se animan transform y opacity. El estado base de cada elemento es el final,
+// así en modo lite (sin animaciones) la pantalla queda completa.
+const DIGITS = '01234567890123456789'.split('').map((n) => `<i>${n}</i>`).join('');
+
+/** Contador que rueda: cada dígito es una tira 0-9 dos veces; --a = dígito de partida, --b = 10 + dígito final. */
+export function odometer(value, from = 0) {
+  const to = String(Math.max(0, Math.trunc(value)));
+  const start = String(Math.max(0, Math.trunc(from))).padStart(to.length, '0').slice(-to.length);
+  return [...to]
+    .map((ch, i) => `<span class="od"><span class="tira" style="--a:${Number(start[i])};--b:${10 + Number(ch)};--i:${i}">${DIGITS}</span></span>`)
     .join('');
+}
+
+// Confeti determinista (sin azar: mismas piezas en cada render).
+const CONFETI_COLORS = ['#ffe200', '#ffffff', '#a3243b'];
+const confeti = () => `<div class="confeti" aria-hidden="true">${Array.from({ length: 14 }, (_, i) => {
+  const x = (i * 137 + 40) % 1840;
+  const d = (i * 53) % 420;
+  const t = 1500 + ((i * 211) % 900);
+  const r = (i % 2 ? -1 : 1) * (240 + ((i * 97) % 480));
+  const w = 16 + ((i * 7) % 16);
+  return `<i style="--x:${x}px;--d:${d}ms;--t:${t}ms;--r:${r}deg;--c:${CONFETI_COLORS[i % 3]};--w:${w}px"></i>`;
+}).join('')}</div>`;
+
+/**
+ * mode: 'entra' (secuencia completa, el recibo se imprime) · 'sigue' (viene de otro paso del cierre:
+ * el recibo ya está, cambian los precios) · 'quieto' (misma pantalla repintada: sin animación).
+ */
+function receiptScreen({ cls, mode, title, sub, lis, many, totLabel, totValue, bigPrefix, bigValue, bigFrom, bigLabel, small, todayISO }) {
   const teeth = '<i></i>'.repeat(19);
-  return `<section class="screen b dropoff">
+  return `<section class="screen b dropoff ${mode}${cls ? ` ${cls}` : ''}">
+<i class="flash" aria-hidden="true"></i>
 <img class="d3-logo" src="${LOGO_DARK}" alt="0800">
 <div class="ranura"></div>
 <div class="recibo-w"><div class="recibo-m">
-<div class="recibo${rows.length > 6 ? ' ap' : ''}">
+<div class="recibo${many ? ' ap' : ''}">
 <img class="lg" src="${LOGO_LIGHT}" alt="0800">
-<h1 class="d">Precio de hoy</h1>
-<p class="sub">Cursos presenciales</p>
+<h1 class="d">${title}</h1>
+<p class="sub">${sub}</p>
 <hr>
 <ul>${lis}</ul>
 <hr>
-<p class="tot"><span>Descuento aplicado</span><b class="d">−${percent}%</b></p>
+<p class="tot"><span>${totLabel}</span><b class="d">${totValue}</b></p>
 ${barcode(40)}
 <code>${ticketCode(todayISO)}</code>
 </div>
 <div class="diente" aria-hidden="true">${teeth}</div>
 </div></div>
 <div class="caida">
-<b class="pct d">−${percent}%</b>
-<p class="d">en todos los cursos presenciales</p>
-<small>Precio especial de hoy, ${formatLong(todayISO)}</small>
+<i class="aro" aria-hidden="true"></i>
+<b class="pct d" aria-label="${totValue}"><span class="late" aria-hidden="true">${bigPrefix}${odometer(bigValue, bigFrom)}<span class="sg">%</span></span></b>
+<p class="d">${bigLabel}</p>
+<small>${small}</small>
 </div>
+${mode === 'quieto' ? '' : confeti()}
 </section>`;
+}
+
+const modeOf = (prev, same) => (same ? 'quieto' : prev ? 'sigue' : 'entra');
+
+/** opts.prev = pantalla de precio que había justo antes: { type: 'dropoff', percent } | { type: 'cashea' } | null */
+export function dropoffScreen(courses, percent, todayISO, opts = {}) {
+  const prev = opts.prev ?? null;
+  const from = prev && prev.type === 'dropoff' && prev.percent !== percent ? prev.percent : null;
+  const rows = buildPriceRows(courses, percent).slice(0, 8);
+  const old = from != null ? buildPriceRows(courses, from).slice(0, 8) : [];
+  const lis = rows
+    .map((r, i) => {
+      const was = old[i] && old[i].slug === r.slug ? `<span class="vj">${formatPrice(old[i].after)}</span>` : '';
+      return `<li style="--i:${i}"><span>${esc(r.name)}</span><s>${formatPrice(r.before)}</s><b>${was}<span class="nv">${formatPrice(r.after)}</span></b></li>`;
+    })
+    .join('');
+  return receiptScreen({
+    cls: '',
+    mode: modeOf(prev, prev && prev.type === 'dropoff' && prev.percent === percent),
+    title: 'Precio de hoy', sub: 'Cursos presenciales', lis, many: rows.length > 6,
+    totLabel: 'Descuento aplicado', totValue: `−${percent}%`,
+    bigPrefix: '<span class="sg">−</span>', bigValue: percent, bigFrom: from ?? 0,
+    bigLabel: 'en todos los cursos presenciales',
+    small: `Precio especial de hoy, ${formatLong(todayISO)}`, todayISO,
+  });
+}
+
+// Reserva con Cashea: precio de hoy (con el descuento) y la inicial que se paga para reservar.
+export function casheaScreen(courses, percent, initialPercent, todayISO, opts = {}) {
+  const prev = opts.prev ?? null;
+  const rows = buildCasheaRows(courses, percent, initialPercent).slice(0, 8);
+  const lis = rows
+    .map((r, i) => `<li style="--i:${i}"><span>${esc(r.name)}</span><s>${formatPrice(r.after)}</s><b><span class="nv">${formatPrice(r.initial)}</span></b></li>`)
+    .join('');
+  return receiptScreen({
+    cls: 'cashea',
+    mode: modeOf(prev, prev && prev.type === 'cashea'),
+    title: 'Reserva hoy', sub: 'Precio de hoy e inicial con Cashea', lis, many: rows.length > 6,
+    totLabel: 'Inicial para reservar', totValue: `${initialPercent}%`,
+    bigPrefix: '', bigValue: initialPercent, bigFrom: 0,
+    bigLabel: 'de inicial con Cashea y reservas tu cupo',
+    small: formatLong(todayISO), todayISO,
+  });
 }
 
 // ---------- Portada: todos los cursos con su miniatura en una sola pantalla ----------
@@ -208,38 +278,6 @@ function portadaBoletin(list, todayISO) {
 <header class="ph-top"><h1 class="d">Cursos presenciales</h1><div class="ed"><p>Edición</p><b class="d">${esc(formatLong(todayISO))}</b></div><img src="${LOGO_LIGHT}" alt="0800"></header>
 <div class="filas">${filas}</div>
 <footer class="pie-p">Reserva con el equipo 0800 al salir</footer>
-</section>`;
-}
-
-// ---------- Reserva con Cashea (recibo: precio de hoy y la inicial que se paga para reservar) ----------
-export function casheaScreen(courses, percent, initialPercent, todayISO) {
-  const rows = buildCasheaRows(courses, percent, initialPercent).slice(0, 8);
-  const lis = rows
-    .map((r) => `<li><span>${esc(r.name)}</span><s>${formatPrice(r.after)}</s><b>${formatPrice(r.initial)}</b></li>`)
-    .join('');
-  const teeth = '<i></i>'.repeat(19);
-  return `<section class="screen b dropoff cashea">
-<img class="d3-logo" src="${LOGO_DARK}" alt="0800">
-<div class="ranura"></div>
-<div class="recibo-w"><div class="recibo-m">
-<div class="recibo${rows.length > 6 ? ' ap' : ''}">
-<img class="lg" src="${LOGO_LIGHT}" alt="0800">
-<h1 class="d">Reserva hoy</h1>
-<p class="sub">Precio de hoy e inicial con Cashea</p>
-<hr>
-<ul>${lis}</ul>
-<hr>
-<p class="tot"><span>Inicial para reservar</span><b class="d">${initialPercent}%</b></p>
-${barcode(40)}
-<code>${ticketCode(todayISO)}</code>
-</div>
-<div class="diente" aria-hidden="true">${teeth}</div>
-</div></div>
-<div class="caida">
-<b class="pct d">${initialPercent}%</b>
-<p class="d">de inicial con Cashea y reservas tu cupo</p>
-<small>${formatLong(todayISO)}</small>
-</div>
 </section>`;
 }
 

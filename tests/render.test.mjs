@@ -120,20 +120,20 @@ test('dropoffScreen: precio tachado, final y −30%', () => {
   assert.match(h, /class="screen b[ "]/);
   for (const r of buildPriceRows(cs, 30)) {
     assert.ok(h.includes(`<s>${formatPrice(r.before)}</s>`));
-    assert.ok(h.includes(`<b>${formatPrice(r.after)}</b>`));
+    assert.ok(h.includes(`<b><span class="nv">${formatPrice(r.after)}</span></b>`));
   }
   assert.match(h, /−30%/);
   assert.match(h, /Descuento aplicado/);
   assert.match(h, /0800 1010 2026/);
   assert.match(h, /Otro &lt;b&gt;/);
-  assert.equal(count(h, /<li>/g), 2);
+  assert.equal(count(h, /<li /g), 2);
 });
 
 test('dropoffScreen: máximo 8 filas y omite cursos sin precio', () => {
   const many = Array.from({ length: 10 }, (_, i) => course({ slug: `c${i}`, name: `C${i}` }));
   many.push(course({ slug: 'sin', name: 'SinPrecio', basePrice: null }));
   const h = dropoffScreen(many, 30, TODAY);
-  assert.equal(count(h, /<li>/g), 8);
+  assert.equal(count(h, /<li /g), 8);
   assert.doesNotMatch(h, /SinPrecio/);
 });
 
@@ -248,7 +248,7 @@ test('leaderboardScreen: nombre largo del líder baja de tamaño', () => {
 test('casheaScreen: precio de hoy, inicial y 40 %', async () => {
   const { casheaScreen } = await import('../js/render.js');
   const h = casheaScreen([course()], 30, 40, TODAY);
-  assert.ok(h.includes('class="screen b dropoff cashea"'));
+  assert.ok(h.includes('class="screen b dropoff entra cashea"'));
   assert.ok(h.includes('$69.99'));
   assert.ok(h.includes('$28.00'));
   assert.ok(h.includes('40%'));
@@ -268,4 +268,37 @@ test('portadaScreen: cartelera (oscura) y boletín (papel), todos los cursos vig
   assert.ok(bol.includes('portada boletin'));
   assert.ok(bol.includes('logo-badge-negro.png'));
   assert.equal((bol.match(/class="fila"/g) || []).length, 2);
+});
+
+test('odometer: una tira por dígito, de --a (partida) a --b (10 + destino)', async () => {
+  const { odometer } = await import('../js/render.js');
+  const h = odometer(30, 10);
+  assert.equal(count(h, /class="od"/g), 2);
+  assert.match(h, /--a:1;--b:13;--i:0/);
+  assert.match(h, /--a:0;--b:10;--i:1/);
+  assert.match(odometer(40), /--a:0;--b:14;--i:0/);
+  assert.equal(count(odometer(5, 30), /class="od"/g), 1);
+});
+
+test('dropoffScreen: entra, sigue (con precio anterior) y quieto', () => {
+  const cs = [course()];
+  const entra = dropoffScreen(cs, 10, TODAY);
+  assert.match(entra, /class="screen b dropoff entra"/);
+  assert.match(entra, /class="confeti"/);
+  assert.doesNotMatch(entra, /class="vj"/);
+  const sigue = dropoffScreen(cs, 30, TODAY, { prev: { type: 'dropoff', percent: 10 } });
+  assert.match(sigue, /class="screen b dropoff sigue"/);
+  assert.ok(sigue.includes('<span class="vj">$89.99</span><span class="nv">$69.99</span>'));
+  assert.match(sigue, /--a:1;--b:13/);
+  const quieto = dropoffScreen(cs, 30, TODAY, { prev: { type: 'dropoff', percent: 30 } });
+  assert.match(quieto, /class="screen b dropoff quieto"/);
+  assert.doesNotMatch(quieto, /class="confeti"|class="vj"/);
+  assert.match(dropoffScreen(cs, 30, TODAY, { prev: { type: 'cashea' } }), /dropoff sigue"/);
+});
+
+test('casheaScreen: sigue tras un drop y quieto si se repinta', async () => {
+  const { casheaScreen } = await import('../js/render.js');
+  assert.match(casheaScreen([course()], 30, 40, TODAY), /dropoff entra cashea"/);
+  assert.match(casheaScreen([course()], 30, 40, TODAY, { prev: { type: 'dropoff', percent: 30 } }), /dropoff sigue cashea"/);
+  assert.match(casheaScreen([course()], 30, 40, TODAY, { prev: { type: 'cashea' } }), /dropoff quieto cashea"/);
 });
