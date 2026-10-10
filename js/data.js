@@ -1,11 +1,22 @@
 const CACHE_KEY = 'tv0800.cache.v1';
 
 export const DEFAULT_CONFIG = {
-  screens: ['calendario', 'cursos', 'resumen'],
+  screens: ['calendario', 'cursos'],
   seconds_per_screen: 12,
   hidden_courses: [],
   message: null,
+  discount_active: false,
+  discount_percent: 0,
+  announcement_title: null,
+  announcement_note: null,
+  announcement_date: null,
 };
+
+function cleanText(v) {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  return t || null;
+}
 
 export function normalizeConfig(c) {
   const o = { ...DEFAULT_CONFIG, ...(c ?? {}) };
@@ -13,6 +24,13 @@ export function normalizeConfig(c) {
   if (!Array.isArray(o.hidden_courses)) o.hidden_courses = [];
   const secs = Number(o.seconds_per_screen);
   o.seconds_per_screen = secs >= 3 ? secs : DEFAULT_CONFIG.seconds_per_screen;
+  o.discount_active = o.discount_active === true;
+  const pct = o.discount_percent;
+  o.discount_percent = Number.isInteger(pct) && pct >= 0 && pct <= 90 ? pct : 0;
+  o.announcement_title = cleanText(o.announcement_title);
+  o.announcement_note = cleanText(o.announcement_note);
+  o.announcement_date = typeof o.announcement_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.announcement_date)
+    ? o.announcement_date : null;
   return o;
 }
 
@@ -26,6 +44,7 @@ function toCourse(r, finished) {
     location: r.location,
     totalSeats: r.total_seats,
     availableSeats: r.available_seats,
+    basePrice: r.base_price != null && r.base_price !== '' ? Number(r.base_price) : null,
     finished,
   };
 }

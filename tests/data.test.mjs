@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DEFAULT_CONFIG, normalizeConfig, pickCourses, createClient, loadSnapshot } from '../js/data.js';
 
-const row = (slug, start, end = start, status = 'active', seats = [60, 30]) => ({
+const row = (slug, start, end = start, status = 'active', seats = [60, 30], base_price) => ({
   course_slug: slug, course_name: slug.toUpperCase(), start_date: start, end_date: end,
   city: null, location: null, total_seats: seats[0], available_seats: seats[1], edition_status: status,
+  ...(base_price !== undefined ? { base_price } : {}),
 });
 
 test('pickCourses toma la edición futura más cercana por curso', () => {
@@ -44,6 +45,30 @@ test('pickCourses ordena próximas por fecha y luego finalizadas', () => {
     row('old', '2026-10-01'), row('late', '2026-10-22'), row('soon', '2026-10-15'),
   ], '2026-10-10');
   assert.deepEqual(out.map((c) => c.slug), ['soon', 'late', 'old']);
+});
+
+test('pickCourses expone basePrice numérico o null si falta', () => {
+  const out = pickCourses([row('p', '2026-10-15', '2026-10-15', 'active', [60, 30], '59.99'), row('q', '2026-10-16')], '2026-10-10');
+  assert.equal(out.find((x) => x.slug === 'p').basePrice, 59.99);
+  assert.equal(out.find((x) => x.slug === 'q').basePrice, null);
+});
+
+test('normalizeConfig sanea descuento y anuncio', () => {
+  const d = normalizeConfig(null);
+  assert.deepEqual(d.screens, ['calendario', 'cursos']);
+  assert.equal(d.discount_active, false);
+  assert.equal(d.discount_percent, 0);
+  assert.equal(d.announcement_title, null);
+  assert.equal(normalizeConfig({ discount_active: 'true' }).discount_active, false);
+  assert.equal(normalizeConfig({ discount_active: true }).discount_active, true);
+  assert.equal(normalizeConfig({ discount_percent: 150 }).discount_percent, 0);
+  assert.equal(normalizeConfig({ discount_percent: 30 }).discount_percent, 30);
+  assert.equal(normalizeConfig({ discount_percent: 12.5 }).discount_percent, 0);
+  assert.equal(normalizeConfig({ announcement_title: '  Hola ' }).announcement_title, 'Hola');
+  assert.equal(normalizeConfig({ announcement_note: '' }).announcement_note, null);
+  assert.equal(normalizeConfig({ announcement_title: 5 }).announcement_title, null);
+  assert.equal(normalizeConfig({ announcement_date: '2026-10-15' }).announcement_date, '2026-10-15');
+  assert.equal(normalizeConfig({ announcement_date: '15/10/2026' }).announcement_date, null);
 });
 
 test('normalizeConfig rellena valores por defecto y sanea', () => {
