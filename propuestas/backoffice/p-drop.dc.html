@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Teléfono: DROP</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="tv-phone.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+@font-face{font-family:'Creato Display Black';src:url(../../assets/fonts/CreatoDisplay-Black.otf) format('opentype');font-weight:900}
+</style>
+</helmet>
+<div class="ph" style="width: 390px; height: 844px">
+  <header class="top"><img src="../../assets/logo-0800-blanco.png" alt="0800"><span class="estado"><i></i>TV conectado</span></header>
+  <h1 class="d">DROP de precio</h1>
+  <p class="sub">Elige el descuento y pulsa el botón. El TV muestra los precios cayendo.</p>
+
+  <div class="chips"><div class="chip">10%</div><div class="chip">20%</div><div class="chip on">30%</div><div class="chip">40%</div><div class="chip">50%</div></div>
+
+  <div class="drop"><b class="d">DROP</b><small>−30% en todos</small></div>
+
+  <div class="vista"><b>Vista previa en el TV</b><br>Delega con IA: $99.99 → <b>$69.99</b><br>Universidad de Ads: $393.99 → <b>$275.79</b><br>y 5 cursos más</div>
+  <div class="sec">Quitar descuento del TV</div>
+
+  <nav class="tabs">
+    <div class="tab"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>Pantalla</div>
+    <div class="tab on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12l-8 8-9-9V4h7z"></path><circle cx="7.5" cy="8.5" r="1.2"></circle></svg>DROP</div>
+    <div class="tab"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"></path></svg>Competencia</div>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

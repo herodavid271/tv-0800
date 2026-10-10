@@ -1,0 +1,75 @@
+/* Back office del teléfono (iPhone 390x844): oscuro, amarillo para lo que se toca, borgoña para lo urgente */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.ph { position: relative; width: 390px; height: 844px; overflow: hidden; background: #050505; color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.ph img { display: block; }
+.d { font-family: 'Creato Display Black', 'Helvetica Neue', Arial, sans-serif; font-weight: 900; letter-spacing: -0.03em; line-height: 0.9; }
+
+.ph .top { height: 96px; padding: 52px 20px 0; display: flex; align-items: center; justify-content: space-between; }
+.ph .top img { height: 26px; }
+.ph .estado { display: flex; align-items: center; font-size: 13px; color: #a8a8a8; }
+.ph .estado i { width: 10px; height: 10px; border-radius: 50%; background: #4ade80; margin-right: 8px; }
+
+.ph .tabs { position: absolute; left: 0; right: 0; bottom: 0; height: 88px; padding: 8px 12px 24px; display: grid; grid-template-columns: repeat(3, 1fr); background: #111; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+.ph .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #8c8c8c; border-radius: 14px; }
+.ph .tab svg { width: 26px; height: 26px; margin-bottom: 4px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ph .tab.on { color: #0e0e0e; background: #ffe200; }
+
+.ph h1 { font-size: 40px; padding: 8px 20px 0; }
+.ph .sub { padding: 10px 20px 0; font-size: 15px; color: #a8a8a8; line-height: 1.35; }
+
+/* Entrar */
+.ph .login { padding: 70px 24px 0; }
+.ph .login img { height: 54px; margin-bottom: 36px; }
+.ph .login h1 { padding: 0; font-size: 38px; }
+.ph .login .sub { padding-left: 0; padding-right: 0; }
+.ph .campo { display: block; margin-top: 22px; }
+.ph .campo span { display: block; font-size: 13px; font-weight: 700; color: #a8a8a8; margin-bottom: 8px; }
+.ph .campo b { display: flex; align-items: center; height: 56px; padding: 0 16px; border: 2px solid #3a3a3a; border-radius: 14px; background: #111; font-size: 18px; font-weight: 400; }
+.ph .campo b.f { border-color: #ffe200; }
+.ph .codigo { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.ph .codigo b { display: flex; align-items: center; justify-content: center; height: 62px; border: 2px solid #3a3a3a; border-radius: 12px; background: #111; font-family: 'Creato Display Black', sans-serif; font-size: 30px; padding-top: 4px; }
+.ph .codigo b.f { border-color: #ffe200; }
+.ph .boton { display: flex; align-items: center; justify-content: center; height: 58px; margin-top: 22px; border-radius: 16px; background: #ffe200; color: #0e0e0e; font-size: 18px; font-weight: 800; }
+.ph .nota { margin-top: 16px; font-size: 13px; color: #8c8c8c; line-height: 1.4; }
+
+/* Pantalla */
+.ph .ahora { margin: 14px 20px 0; padding: 16px 18px; border-radius: 18px; background: #111; border: 1px solid rgba(255, 255, 255, 0.12); }
+.ph .ahora small { display: block; font-size: 12px; font-weight: 700; color: #8c8c8c; margin-bottom: 6px; }
+.ph .ahora b { font-size: 22px; }
+.ph .ahora span { float: right; margin-top: -26px; padding: 5px 12px; border-radius: 999px; background: #ffe200; color: #0e0e0e; font-size: 12px; font-weight: 800; }
+.ph .rejilla { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 20px 0; }
+.ph .esc { position: relative; height: 92px; padding: 14px; border-radius: 18px; background: #1a1a1a; border: 2px solid transparent; font-size: 17px; font-weight: 800; line-height: 1.1; display: flex; flex-direction: column; justify-content: flex-end; }
+.ph .esc small { position: absolute; left: 14px; top: 12px; font-size: 12px; font-weight: 700; color: #8c8c8c; }
+.ph .esc.on { background: #ffe200; color: #0e0e0e; }
+.ph .esc.on small { color: #0e0e0e; }
+.ph .auto { display: flex; align-items: center; justify-content: center; height: 60px; margin: 14px 20px 0; border-radius: 18px; border: 2px solid #ffe200; color: #ffe200; font-size: 17px; font-weight: 800; }
+.ph .auto svg { width: 24px; height: 24px; margin-right: 10px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* DROP */
+.ph .chips { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 18px 20px 0; }
+.ph .chip { display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 14px; background: #1a1a1a; font-size: 18px; font-weight: 800; }
+.ph .chip.on { background: #ffe200; color: #0e0e0e; }
+.ph .drop { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 250px; height: 250px; margin: 26px auto 0; border-radius: 50%; background: #ffe200; color: #0e0e0e; border: 8px solid #0e0e0e; outline: 4px solid #ffe200; }
+.ph .drop b { font-size: 68px; }
+.ph .drop small { margin-top: 8px; font-size: 16px; font-weight: 800; }
+.ph .drop.activo { background: #a3243b; color: #fff; outline-color: #a3243b; }
+.ph .vista { margin: 24px 20px 0; padding: 14px 18px; border-radius: 16px; background: #111; font-size: 14px; color: #a8a8a8; line-height: 1.5; }
+.ph .vista b { color: #f5f5f5; }
+.ph .sec { display: flex; align-items: center; justify-content: center; height: 50px; margin: 12px 20px 0; border-radius: 14px; background: #1a1a1a; font-size: 15px; font-weight: 800; color: #f5f5f5; }
+
+/* Competencia */
+.ph .nuevo { display: grid; grid-template-columns: 1fr 112px; gap: 10px; padding: 14px 20px 0; }
+.ph .nuevo b { display: flex; align-items: center; height: 52px; padding: 0 14px; border-radius: 14px; border: 2px solid #3a3a3a; background: #111; font-size: 16px; font-weight: 400; color: #8c8c8c; }
+.ph .nuevo i { display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; background: #ffe200; color: #0e0e0e; font-style: normal; font-size: 15px; font-weight: 800; }
+.ph .lista { padding: 12px 20px 0; }
+.ph .fila { display: grid; grid-template-columns: 34px 1fr auto 76px; align-items: center; height: 66px; margin-bottom: 8px; padding: 0 8px 0 14px; border-radius: 16px; background: #1a1a1a; }
+.ph .fila .n { font-family: 'Creato Display Black', sans-serif; font-size: 22px; color: #ffe200; padding-top: 3px; }
+.ph .fila .nom { font-size: 18px; font-weight: 800; }
+.ph .fila .pts { margin-right: 12px; font-size: 20px; font-weight: 800; color: #a8a8a8; }
+.ph .fila .mas { display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 12px; background: #ffe200; color: #0e0e0e; font-size: 22px; font-weight: 800; }
+.ph .fila.rec { outline: 2px solid #ffe200; }
+.ph .barra { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 6px 20px 0; }
+.ph .barra i { display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 12px; background: #1a1a1a; font-style: normal; font-size: 14px; font-weight: 800; }
+.ph .barra i.peligro { color: #e0607a; }
+.ph .aviso { position: absolute; left: 20px; right: 20px; bottom: 100px; display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px; border-radius: 14px; background: #f5f5f5; color: #0e0e0e; font-size: 15px; font-weight: 800; }
+.ph .aviso i { font-style: normal; color: #a3243b; }

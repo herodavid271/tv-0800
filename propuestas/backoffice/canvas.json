@@ -1,0 +1,30 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-10T17:45:00Z" },
+  "title": "Back office TV 0800",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 844, "title": "Teléfono · Entrar" },
+    "p-pantalla.dc.html": { "x": 470, "y": 0, "w": 390, "h": 844, "title": "Teléfono · Pantalla" },
+    "p-drop.dc.html": { "x": 940, "y": 0, "w": 390, "h": 844, "title": "Teléfono · DROP" },
+    "p-competencia.dc.html": { "x": 1410, "y": 0, "w": 390, "h": 844, "title": "Teléfono · Competencia" },
+    "l1-sticker.dc.html": { "x": 0, "y": 1300, "w": 1920, "h": 1080, "title": "Leaderboard 1 · Sticker" },
+    "l2-tablero.dc.html": { "x": 2000, "y": 1300, "w": 1920, "h": 1080, "title": "Leaderboard 2 · Tablero" },
+    "l3-poster.dc.html": { "x": 4000, "y": 1300, "w": 1920, "h": 1080, "title": "Leaderboard 3 · Póster" }
+  },
+  "order": [
+    "Main.dc.html",
+    "p-pantalla.dc.html",
+    "p-drop.dc.html",
+    "p-competencia.dc.html",
+    "l1-sticker.dc.html",
+    "l2-tablero.dc.html",
+    "l3-poster.dc.html"
+  ],
+  "notes": {
+    "tel": { "x": 0, "y": -300, "text": "La app del teléfono (iPhone): entrar, fijar pantalla, DROP y competencia", "kind": "title1", "maxW": 1800 },
+    "tv": { "x": 0, "y": 1000, "text": "Leaderboard en el TV: tres propuestas (nombres y puntos de ejemplo)", "kind": "title1", "maxW": 5920 }
+  },
+  "designSystems": []
+}

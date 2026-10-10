@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Leaderboard 3: póster</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="tv-lb.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+@font-face{font-family:'Creato Display Black';src:url(../../assets/fonts/CreatoDisplay-Black.otf) format('opentype');font-weight:900}
+</style>
+</helmet>
+<div class="lb s3" style="width: 1920px; height: 1080px">
+  <img class="logo" src="../../assets/logo-0800.png" alt="0800">
+  <p class="curso">Competencia · Delega con IA</p>
+
+  <p class="uno d">1</p>
+  <div class="lid"><b class="d">ANA M.</b><span>7 puntos</span></div>
+
+  <aside class="panel">
+    <h2 class="d">Los que vienen detrás</h2>
+    <div class="fila nuevo"><span class="r d">2</span><span class="nom">Carlos R.</span><span class="pts d">6</span></div>
+    <div class="fila"><span class="r d">3</span><span class="nom">Luisa P.</span><span class="pts d">5</span></div>
+    <div class="fila"><span class="r d">4</span><span class="nom">Mateo G.</span><span class="pts d">4</span></div>
+    <div class="fila"><span class="r d">5</span><span class="nom">Valeria S.</span><span class="pts d">3</span></div>
+    <div class="fila"><span class="r d">6</span><span class="nom">Andrés T.</span><span class="pts d">2</span></div>
+    <div class="fila"><span class="r d">7</span><span class="nom">Camila D.</span><span class="pts d">1</span></div>
+  </aside>
+
+  <div class="cinta d">Carlos R. acaba de sumar un punto</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
