@@ -1,4 +1,5 @@
 import { daysBetween } from './dates.js';
+import { buildPriceRows } from './pricing.js';
 
 export const LOW_SEATS = 10;
 
@@ -23,17 +24,28 @@ export function seatState(course) {
 export function buildScreens(courses, config, todayISO) {
   const visible = courses.filter((c) => !config.hidden_courses.includes(c.slug));
   const upcoming = visible.filter((c) => !c.finished);
-  if (upcoming.length === 0) return [{ type: 'vacio' }];
-
   const soon = upcoming.filter((c) => daysUntil(c.startDate, todayISO) <= 1);
   const later = upcoming.filter((c) => daysUntil(c.startDate, todayISO) > 1);
   const ordered = [...soon, ...later];
 
   const screens = [];
-  for (const name of config.screens) {
-    if (name === 'calendario') screens.push({ type: 'calendario' });
-    else if (name === 'cursos') ordered.forEach((course) => screens.push({ type: 'curso', course }));
-    else if (name === 'resumen') screens.push({ type: 'resumen' });
+  if (config.announcement_title) screens.push({ type: 'anuncio' });
+
+  if (upcoming.length > 0) {
+    for (const name of config.screens) {
+      if (name === 'calendario') screens.push({ type: 'calendario' });
+      else if (name === 'cursos') ordered.forEach((course) => screens.push({ type: 'curso', course }));
+    }
   }
+
+  const percent = config.discount_percent;
+  if (
+    config.discount_active === true &&
+    percent >= 1 && percent <= 90 &&
+    buildPriceRows(visible, percent).length > 0
+  ) {
+    screens.push({ type: 'dropoff', percent });
+  }
+
   return screens.length ? screens : [{ type: 'vacio' }];
 }

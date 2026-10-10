@@ -27,11 +27,54 @@ test('seatState', () => {
   assert.equal(seatState({ availableSeats: 11 }), 'ok');
 });
 
-test('buildScreens: calendario, cursos por fecha y resumen', () => {
+test('buildScreens: calendario y cursos por fecha, sin resumen', () => {
   const courses = [course('b', '2026-10-16'), course('c', '2026-10-22')];
   const s = buildScreens(courses, DEFAULT_CONFIG, '2026-10-10');
-  assert.deepEqual(s.map((x) => x.type), ['calendario', 'curso', 'curso', 'resumen']);
+  assert.deepEqual(s.map((x) => x.type), ['calendario', 'curso', 'curso']);
   assert.deepEqual(s.filter((x) => x.type === 'curso').map((x) => x.course.slug), ['b', 'c']);
+});
+
+test('buildScreens: resumen y nombres desconocidos se ignoran', () => {
+  const cfg = { ...DEFAULT_CONFIG, screens: ['resumen', 'calendario', 'xyz'] };
+  const s = buildScreens([course('a', '2026-10-15')], cfg, '2026-10-10');
+  assert.deepEqual(s.map((x) => x.type), ['calendario']);
+});
+
+const priced = (slug, d, over = {}) => course(slug, d, { basePrice: 100, ...over });
+const dcfg = (over = {}) => ({ ...DEFAULT_CONFIG, discount_active: true, discount_percent: 20, ...over });
+
+test('buildScreens: anuncio primero y dropoff último', () => {
+  const cfg = dcfg({ announcement_title: 'Aviso' });
+  const s = buildScreens([priced('a', '2026-10-15')], cfg, '2026-10-10');
+  assert.deepEqual(s.map((x) => x.type), ['anuncio', 'calendario', 'curso', 'dropoff']);
+  assert.equal(s[3].percent, 20);
+});
+
+test('buildScreens: dropoff requiere flag, porcentaje 1-90 y algún precio', () => {
+  const c = [priced('a', '2026-10-15')];
+  const types = (cfg, cs = c) => buildScreens(cs, cfg, '2026-10-10').map((x) => x.type);
+  assert.ok(types(dcfg()).includes('dropoff'));
+  assert.ok(!types(dcfg({ discount_active: false })).includes('dropoff'));
+  assert.ok(!types(dcfg({ discount_active: 'true' })).includes('dropoff'));
+  assert.ok(!types(dcfg({ discount_percent: 0 })).includes('dropoff'));
+  assert.ok(!types(dcfg({ discount_percent: 91 })).includes('dropoff'));
+  assert.ok(types(dcfg({ discount_percent: 90 })).includes('dropoff'));
+  assert.ok(!types(dcfg(), [course('a', '2026-10-15')]).includes('dropoff'));
+});
+
+test('buildScreens: dropoff con solo cursos finalizados con precio', () => {
+  const old = [priced('old', '2026-10-01', { finished: true })];
+  assert.deepEqual(buildScreens(old, dcfg(), '2026-10-10'), [{ type: 'dropoff', percent: 20 }]);
+});
+
+test('buildScreens: anuncio sin cursos próximos', () => {
+  const cfg = { ...DEFAULT_CONFIG, announcement_title: 'Aviso' };
+  assert.deepEqual(buildScreens([], cfg, '2026-10-10'), [{ type: 'anuncio' }]);
+});
+
+test('buildScreens: cursos ocultos no cuentan para el dropoff', () => {
+  const cfg = dcfg({ hidden_courses: ['a'] });
+  assert.deepEqual(buildScreens([priced('a', '2026-10-15')], cfg, '2026-10-10'), [{ type: 'vacio' }]);
 });
 
 test('buildScreens: el curso de hoy o mañana pasa primero', () => {
@@ -44,7 +87,7 @@ test('buildScreens: los cursos finalizados no tienen pantalla propia', () => {
   const courses = [course('old', '2026-10-01', { finished: true }), course('new', '2026-10-15')];
   const s = buildScreens(courses, DEFAULT_CONFIG, '2026-10-10');
   assert.deepEqual(s.filter((x) => x.type === 'curso').map((x) => x.course.slug), ['new']);
-  assert.deepEqual(s.map((x) => x.type), ['calendario', 'curso', 'resumen']);
+  assert.deepEqual(s.map((x) => x.type), ['calendario', 'curso']);
 });
 
 test('buildScreens respeta hidden_courses y screens de la config', () => {
