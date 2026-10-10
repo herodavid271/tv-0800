@@ -11,7 +11,7 @@ Abrir la URL del sitio (Vercel) en el navegador del TV en pantalla completa.
 ## Pantallas
 
 1. **Anuncio libre** (tiquete): solo si hay un título en `announcement_title`. Va primero.
-   - **Portada de cursos** (boletín, fondo papel): en la secuencia de breaks, antes del calendario. Muestra todos los cursos vigentes con su miniatura.
+   - **Portada de cursos** (tiquetes sobre negro: el próximo curso grande y cuatro chicos, con fecha LUN/MAR/MIE/JUE/VIE/SAB/DOM): en la secuencia de breaks, antes del calendario. No muestra cupos.
 2. **Calendario** (stickers): el mes con las fechas de las próximas ediciones y los 3 próximos cursos.
 3. **Un curso por pantalla** (tiquete blanco): fecha, cuenta regresiva, cupos. Solo cursos con edición próxima.
 4. **Dropoff de precio** (recibo): todos los cursos con el descuento aplicado. Va último y solo si está activo.
@@ -44,7 +44,7 @@ App web para iPhone en `https://tv-0800.vercel.app/admin/`. Instalar: abrir en S
 
 - **Entrar:** correo (`hola@davidsantana.net`, ya escrito) y tu clave. Es independiente de las cuentas del Hub: solo ese correo entra. Tras 5 intentos fallidos el login se bloquea 1 min, luego 2, 4, 8… hasta 60 min, y cada intento fallido tarda 1 s. Un teléfono con sesión iniciada no se bloquea (la sesión dura 60 días, máximo 5 teléfonos).
 - **Cambiar la clave** (editor SQL de Supabase, cierra todas las sesiones): `select tv_admin_set_password('hola@davidsantana.net', 'tu clave nueva');` (mínimo 10 caracteres).
-- **Pantalla:** tres botones grandes: **Secuencia de breaks** (el TV rota solo calendario y cursos), **Competencia en vivo** (leaderboard fijo) y **Secuencia de cierre**. Debajo, "Otras pantallas" fija el calendario o un curso; "Volver a automático" reanuda la rotación normal.
+- **Pantalla:** tres botones grandes: **Secuencia de breaks** (el TV rota solo la portada de tiquetes y el calendario), **Competencia en vivo** (leaderboard fijo) y **Secuencia de cierre**. Debajo, "Otras pantallas" fija el calendario o un curso; "Volver a automático" reanuda la rotación normal.
 - **Cierre:** pestaña Cierre, cuatro pasos: Portada de cursos (cartelera oscura con miniaturas) → Drop −10 % → Drop −30 % → Inicial 40 % con Cashea (precio con 30 % y lo que se paga para reservar). El botón Siguiente avanza; se puede tocar un paso para saltar; "Terminar secuencia" vuelve a automático.
 - **Competencia:** al agregar a alguien entra con 1 punto y un emoji chistoso al azar según el nombre (heurística: hombre, mujer o neutro). +1 por respuesta correcta, deshacer, y "Nueva competencia" borra todo.
 

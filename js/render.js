@@ -235,8 +235,8 @@ export function casheaScreen(courses, percent, initialPercent, todayISO, opts = 
 }
 
 // ---------- Portada: todos los cursos con su miniatura en una sola pantalla ----------
-// cartelera = fondo oscuro (A) · boletin = fondo papel (C)
-const WEEK_ABBR = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+// cartelera = rejilla oscura (cierre) · tiquetes = uno grande y cuatro chicos (breaks)
+const WEEK_ABBR = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM'];
 const weekdayAbbr = (iso) => {
   const { y, m, d } = parseISO(iso);
   return WEEK_ABBR[(new Date(y, m - 1, d).getDay() + 6) % 7];
@@ -245,7 +245,7 @@ const precioTxt = (c) => (c.basePrice > 0 ? formatPrice(c.basePrice) : '');
 
 export function portadaScreen(courses, variant, todayISO) {
   const list = courses.filter((c) => !c.finished).sort((a, b) => a.startDate.localeCompare(b.startDate));
-  return variant === 'boletin' ? portadaBoletin(list, todayISO) : portadaCartelera(list, todayISO);
+  return variant === 'tiquetes' ? portadaTiquetes(list, todayISO) : portadaCartelera(list, todayISO);
 }
 
 function portadaCartelera(list, todayISO) {
@@ -263,21 +263,32 @@ function portadaCartelera(list, todayISO) {
 </section>`;
 }
 
-function portadaBoletin(list, todayISO) {
-  const filas = list.slice(0, 6).map((c) => {
-    const { d } = parseISO(c.startDate);
-    const cupos = c.availableSeats != null ? `<small>${Number(c.availableSeats)} cupos disponibles</small>` : '';
-    return `<div class="fila">
-<div class="dia"><b class="d">${d}</b><span>${weekdayAbbr(c.startDate)}</span></div>
+function portadaTiquetes(list, todayISO) {
+  const fecha = (c) => {
+    const { d, m } = parseISO(c.startDate);
+    return `${weekdayAbbr(c.startDate)} ${d} de ${MESES[m - 1].slice(0, 3)}`;
+  };
+  const [big, ...rest] = list.slice(0, 5);
+  const grande = big
+    ? `<span class="sello d">El próximo</span>
+<article class="tq gr">
+<div class="pic">${thumb(big.slug)}<span class="fb d">${esc(big.name)}</span></div>
+<div class="me"><small>Curso presencial</small><b class="d">${esc(big.name)}</b></div>
+<div class="perf"></div><i class="mu a"></i><i class="mu b"></i>
+<div class="tal"><div><small>Fecha</small><b class="d">${fecha(big)}</b></div><div>${barcode(24, 'bc')}<code>${ticketCode(big.startDate)}</code></div></div>
+</article>`
+    : '';
+  const chicos = rest
+    .map((c, i) => `<article class="tq ch c${i}">
 <div class="pic">${thumb(c.slug)}<span class="fb d">${esc(c.name)}</span></div>
-<div class="nom"><b class="d">${esc(c.name)}</b>${cupos}</div>
-<div class="pre d">${precioTxt(c)}</div>
-</div>`;
-  }).join('');
-  return `<section class="screen c portada boletin">
-<header class="ph-top"><h1 class="d">Cursos presenciales</h1><div class="ed"><p>Edición</p><b class="d">${esc(formatLong(todayISO))}</b></div><img src="${LOGO_LIGHT}" alt="0800"></header>
-<div class="filas">${filas}</div>
-<footer class="pie-p">Reserva con el equipo 0800 al salir</footer>
+<div class="nm d">${esc(c.name)}</div>
+<div class="perf"></div><i class="mu a"></i><i class="mu b"></i>
+<div class="pi"><b class="d">${fecha(c)}</b></div>
+</article>`)
+    .join('');
+  return `<section class="screen b portada tiquetes">
+<header class="ph-top"><h1 class="d">Lo que viene</h1><div><span>${esc(formatLong(todayISO))}</span><img src="${LOGO_DARK}" alt="0800"></div></header>
+${grande}${chicos}
 </section>`;
 }
 

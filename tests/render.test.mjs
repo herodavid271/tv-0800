@@ -255,7 +255,7 @@ test('casheaScreen: precio de hoy, inicial y 40 %', async () => {
   assert.ok(!h.includes('<s>$99.99'));
 });
 
-test('portadaScreen: cartelera (oscura) y boletín (papel), todos los cursos vigentes, logo del fondo correcto', async () => {
+test('portadaScreen: cartelera y tiquetes, solo cursos vigentes, días en mayúscula y sin cupos', async () => {
   const { portadaScreen } = await import('../js/render.js');
   const cs = [course({ slug: 'a', name: 'Alfa', startDate: '2026-10-22' }), course({ slug: 'b', name: 'Beta', startDate: '2026-10-15' }), course({ slug: 'z', name: 'Vieja', startDate: '2026-01-01', finished: true })];
   const car = portadaScreen(cs, 'cartelera', TODAY);
@@ -264,10 +264,18 @@ test('portadaScreen: cartelera (oscura) y boletín (papel), todos los cursos vig
   assert.equal((car.match(/class="tile"/g) || []).length, 2);
   assert.ok(car.indexOf('Beta') < car.indexOf('Alfa'));
   assert.ok(!car.includes('Vieja'));
-  const bol = portadaScreen(cs, 'boletin', TODAY);
-  assert.ok(bol.includes('portada boletin'));
-  assert.ok(bol.includes('logo-badge-negro.png'));
-  assert.equal((bol.match(/class="fila"/g) || []).length, 2);
+  const tq = portadaScreen(cs, 'tiquetes', TODAY);
+  assert.ok(tq.includes('portada tiquetes'));
+  assert.ok(tq.includes('logo-badge-blanco.png'));
+  assert.equal(count(tq, /class="tq gr"/g), 1);
+  assert.equal(count(tq, /class="tq ch c\d"/g), 1);
+  assert.ok(tq.indexOf('class="tq gr"') < tq.indexOf('Alfa') );
+  assert.match(tq, /JUE 15 de oct/);
+  assert.match(tq, /JUE 22 de oct/);
+  assert.doesNotMatch(tq, /cupos|Cupos|\d+ de \d+/);
+  assert.ok(!tq.includes('Vieja'));
+  assert.match(portadaScreen([course({ startDate: '2026-10-14' })], 'tiquetes', TODAY), /MIE 14 de oct/);
+  assert.match(portadaScreen([course({ startDate: '2026-10-17' })], 'tiquetes', TODAY), /SAB 17 de oct/);
 });
 
 test('odometer: una tira por dígito, de --a (partida) a --b (10 + destino)', async () => {
