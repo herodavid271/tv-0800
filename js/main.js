@@ -1,8 +1,8 @@
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient, loadSnapshot, pickCourses, normalizeConfig } from './data.js';
 import { buildScreens } from './rotation.js';
-import { localISO, formatLong } from './dates.js';
-import { calendarScreen, courseScreen, summaryScreen, emptyScreen } from './render.js';
+import { localISO } from './dates.js';
+import { calendarScreen, courseScreen, dropoffScreen, announcementScreen, emptyScreen, clockText } from './render.js';
 
 const REFRESH_MS = 5 * 60 * 1000;
 const RETRY_MS = 15 * 1000;
@@ -10,7 +10,6 @@ const $ = (id) => document.getElementById(id);
 const root = document.documentElement;
 
 const params = new URLSearchParams(location.search);
-if (params.get('tema') === 'claro') root.dataset.theme = 'claro';
 if (params.has('lite')) root.classList.add('lite');
 
 const client = createClient({ url: SUPABASE_URL, key: SUPABASE_KEY });
@@ -27,10 +26,16 @@ function fit() {
   $('stage').style.transform = `translate(-50%, -50%) scale(${s})`;
 }
 
+// Relojes en fichas: reescribe los caracteres existentes, sin volver a renderizar.
 function tick() {
-  const now = new Date();
-  $('time').textContent = now.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit', hour12: false });
-  $('date').textContent = formatLong(localISO(now));
+  const text = clockText();
+  document.querySelectorAll('[data-clock]').forEach((el) => {
+    const tiles = el.children;
+    if (tiles.length !== text.length) return;
+    for (let i = 0; i < tiles.length; i++) {
+      if (tiles[i].textContent !== text[i]) tiles[i].textContent = text[i];
+    }
+  });
 }
 
 const visibleCourses = () => state.courses.filter((c) => !state.config.hidden_courses.includes(c.slug));
@@ -45,26 +50,13 @@ function rebuild() {
 function html(screen) {
   const today = localISO();
   switch (screen.type) {
+    case 'anuncio': return announcementScreen(state.config, today);
     case 'calendario': return calendarScreen(visibleCourses(), today);
-    case 'curso': return courseScreen(screen.course, today);
-    case 'resumen': return summaryScreen(visibleCourses(), today);
+    case 'curso': return courseScreen(screen.course, today, { message: state.config.message });
+    case 'dropoff': return dropoffScreen(visibleCourses(), screen.percent, today);
     case 'conectando': return emptyScreen('Conectando…');
     default: return emptyScreen('Próximamente');
   }
-}
-
-function animateCounts(scope) {
-  if (root.classList.contains('lite') || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  scope.querySelectorAll('[data-count]').forEach((el) => {
-    const to = Number(el.dataset.count);
-    const t0 = performance.now();
-    const D = 700;
-    (function step(t) {
-      const p = Math.min(1, (t - t0) / D);
-      el.textContent = String(Math.round(to * (1 - Math.pow(1 - p, 3))));
-      if (p < 1) requestAnimationFrame(step);
-    })(t0);
-  });
 }
 
 function show() {
@@ -73,9 +65,7 @@ function show() {
   const secs = state.config.seconds_per_screen;
   try {
     $('host').innerHTML = html(screen);
-    animateCounts($('host'));
     $('progress').innerHTML = `<i style="--dur:${secs}s"></i>`;
-    $('msg').textContent = state.config.message ?? '';
     $('stage').classList.toggle('offline', !state.online);
   } catch (e) {
     console.error(e);
