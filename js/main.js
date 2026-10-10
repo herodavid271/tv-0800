@@ -1,6 +1,6 @@
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient, loadSnapshot, pickCourses, normalizeConfig } from './data.js';
-import { buildScreens } from './rotation.js';
+import { buildScreens, findScreenIndex } from './rotation.js';
 import { localISO } from './dates.js';
 import { calendarScreen, courseScreen, dropoffScreen, announcementScreen, emptyScreen, clockText } from './render.js';
 
@@ -41,10 +41,14 @@ function tick() {
 const visibleCourses = () => state.courses.filter((c) => !state.config.hidden_courses.includes(c.slug));
 
 function rebuild() {
+  const prev = state.screens;
+  const prevIndex = state.index;
   state.screens = state.loaded
     ? buildScreens(state.courses, state.config, localISO())
     : [{ type: 'conectando' }];
-  if (state.index >= state.screens.length) state.index = 0;
+  const placeholder = (list) => list.length <= 1 && ['conectando', 'vacio'].includes(list[0]?.type);
+  if (firstLoad || placeholder(prev) || state.screens.length <= 1) state.index = 0;
+  else state.index = findScreenIndex(prev, prevIndex, state.screens);
 }
 
 function html(screen) {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { daysUntil, badgeFor, seatState, buildScreens, LOW_SEATS } from '../js/rotation.js';
+import { daysUntil, findScreenIndex, seatState, buildScreens, LOW_SEATS } from '../js/rotation.js';
 import { DEFAULT_CONFIG } from '../js/data.js';
 
 const course = (slug, startDate, over = {}) => ({
@@ -11,13 +11,6 @@ const course = (slug, startDate, over = {}) => ({
 test('daysUntil cuenta días desde hoy', () => {
   assert.equal(daysUntil('2026-10-15', '2026-10-10'), 5);
   assert.equal(daysUntil('2026-10-09', '2026-10-10'), -1);
-});
-
-test('badgeFor', () => {
-  assert.equal(badgeFor(-1), 'EN CURSO');
-  assert.equal(badgeFor(0), 'HOY');
-  assert.equal(badgeFor(1), 'MAÑANA');
-  assert.equal(badgeFor(2), null);
 });
 
 test('seatState', () => {
@@ -112,4 +105,24 @@ test('buildScreens: config sin pantallas válidas devuelve vacío', () => {
 test('seatState: plazas nulas o ausentes no se leen como agotado', () => {
   assert.equal(seatState({ availableSeats: null }), 'ok');
   assert.equal(seatState({}), 'ok');
+});
+
+test('findScreenIndex: encuentra la misma pantalla tras insertar un anuncio al inicio', () => {
+  const old = [{ type: 'calendario' }, { type: 'dropoff' }];
+  const nuevo = [{ type: 'anuncio' }, { type: 'calendario' }, { type: 'dropoff' }];
+  assert.equal(findScreenIndex(old, 1, nuevo), 2);
+});
+
+test('findScreenIndex: pantalla eliminada devuelve el ultimo indice', () => {
+  const old = [{ type: 'calendario' }, { type: 'dropoff' }];
+  assert.equal(findScreenIndex(old, 1, [{ type: 'calendario' }, { type: 'anuncio' }]), 1);
+});
+
+test('findScreenIndex: lista anterior vacia devuelve el ultimo indice', () => {
+  assert.equal(findScreenIndex([], 0, [{ type: 'a' }, { type: 'b' }, { type: 'c' }]), 2);
+});
+
+test('findScreenIndex: los cursos se distinguen por slug', () => {
+  const k = (slug) => ({ type: 'curso', course: { slug } });
+  assert.equal(findScreenIndex([k('a'), k('b')], 1, [k('b'), k('a')]), 0);
 });

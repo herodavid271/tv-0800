@@ -89,7 +89,7 @@ function seatsBlock(c) {
   const state = seatState(c);
   if (state === 'agotado') return '<p class="seats warn"><small>Cupos disponibles</small><b class="d">AGOTADO</b></p>';
   if (c.totalSeats == null) return '';
-  return `<p class="seats${state === 'pocos' ? ' warn' : ''}"><small>Cupos disponibles</small><b class="d">${c.availableSeats} de ${c.totalSeats}</b></p>`;
+  return `<p class="seats${state === 'pocos' ? ' warn' : ''}"><small>Cupos disponibles</small><b class="d">${Number(c.availableSeats)} de ${Number(c.totalSeats)}</b></p>`;
 }
 
 function countdown(c, days) {
@@ -114,7 +114,7 @@ ${header()}
 <div class="izq">
 <div class="pic">${thumb(c.slug)}<span class="fb d">${esc(c.name)}</span></div>
 <div class="meta">
-<p class="nom"><small>Curso presencial${place ? ` · ${esc(place)}` : ''}</small><b class="d${c.name.length > 22 ? ' largo' : ''}">${esc(c.name)}</b></p>
+<p class="nom"><small>Curso presencial${place ? ` · ${esc(place)}` : ''}</small><b class="d${(c.name ?? '').length > 22 ? ' largo' : ''}">${esc(c.name)}</b></p>
 ${seatsBlock(c)}
 </div>
 </div>
@@ -165,7 +165,7 @@ ${barcode(40)}
 // ---------- Anuncio libre (tiquete) ----------
 export function announcementScreen(config, todayISO) {
   const title = config.announcement_title ?? '';
-  const size = title.length > 64 ? ' largo' : title.length > 40 ? ' medio' : '';
+  const size = title.length > 110 ? ' xl' : title.length > 64 ? ' largo' : title.length > 40 ? ' medio' : '';
   const date = config.announcement_date;
   let talon = '';
   if (date) {

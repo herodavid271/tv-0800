@@ -25,3 +25,18 @@ test('buildPriceRows incluye finalizados, conserva el orden y excluye sin precio
   assert.deepEqual(rows[0], { slug: 'a', name: 'A', before: 59.99, after: 41.99, saving: 18 });
   assert.equal(rows[1].after, 69.99);
 });
+
+test('applyDiscount redondea medios centavos hacia arriba', () => {
+  assert.equal(applyDiscount(10.45, 10), 9.41);
+  assert.equal(applyDiscount(10.03, 50), 5.02);
+  assert.equal(applyDiscount(10.70, 15), 9.10);
+});
+
+test('applyDiscount coincide con aritmetica entera half-up (barrido)', () => {
+  for (let cents = 1000; cents <= 6000; cents++) {
+    for (const p of [5, 10, 15, 25, 30, 50]) {
+      const expected = Math.floor((cents * (100 - p) + 50) / 100) / 100;
+      assert.equal(applyDiscount(cents / 100, p), expected, `${cents / 100} al ${p}%`);
+    }
+  }
+});

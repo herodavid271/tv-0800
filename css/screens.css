@@ -23,7 +23,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 
 /* Marco global mínimo */
 #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: center; overflow: hidden; background: #050505; }
-#host { position: absolute; inset: 0; }
+#host { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
 #progress { position: absolute; left: 0; bottom: 0; width: 100%; height: 8px; background: rgba(14, 14, 14, 0.25); z-index: 10; }
 #progress i { display: block; height: 100%; background: #ffe200; transform: scaleX(0); transform-origin: left; animation: fill var(--dur, 12s) linear forwards; }
 #dot { position: absolute; left: 24px; bottom: 24px; width: 14px; height: 14px; border-radius: 50%; background: #a3243b; opacity: 0; z-index: 11; }
@@ -36,7 +36,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b .pie { position: absolute; left: 64px; right: 64px; bottom: 0; height: 84px; display: flex; align-items: center; justify-content: space-between; border-top: 2px solid var(--line); font-size: 26px; color: var(--m); }
 .b .pie i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--y); margin-right: 14px; animation: b-late 1.6s ease-in-out infinite; }
 
-.fl { display: inline-flex; gap: calc(var(--s) * 0.05); --s: 56px; vertical-align: top; }
+/* margen en vez de gap: Chrome < 84 */
+.fl { display: inline-flex; --s: 56px; vertical-align: top; }
+.fl i + i { margin-left: calc(var(--s) * 0.05); }
 .fl i { position: relative; width: calc(var(--s) * 0.66); height: var(--s); border-radius: calc(var(--s) * 0.08); background: var(--tile); color: var(--t); display: flex; align-items: center; justify-content: center; font-family: var(--disp); font-style: normal; font-weight: 900; font-size: calc(var(--s) * 0.74); line-height: 1; padding-top: calc(var(--s) * 0.08); animation: b-gira 0.55s both; animation-delay: calc(var(--i, 0) * 26ms + var(--d, 0ms)); }
 .fl i::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: max(1px, calc(var(--s) * 0.018)); background: rgba(0, 0, 0, 0.6); }
 .fl.k i { background: var(--ink); color: var(--y); }
@@ -44,7 +46,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b .reloj { --s: 60px; }
 
 /* Código de barras decorativo (curso, anuncio, recibo) */
-.b .cod { margin-top: 40px; height: 78px; display: flex; gap: 5px; }
+.b .cod { margin-top: 40px; height: 78px; display: flex; }
+.b .cod i + i { margin-left: 5px; }
 .b .cod i { background: var(--ink); width: 5px; }
 .b .cod i:nth-child(3n) { width: 12px; } .b .cod i:nth-child(4n + 1) { width: 2px; } .b .cod i:nth-child(7n) { width: 9px; margin-right: 6px; }
 
@@ -82,12 +85,12 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 
 .c .lista { position: absolute; left: 1090px; top: 150px; width: 760px; z-index: 2; }
 .c .lista .titulo { position: static; font-size: 96px; margin-bottom: 40px; }
-.c .it { display: flex; align-items: center; gap: 26px; padding: 16px; margin-bottom: 34px; border-radius: 24px; box-shadow: 10px 10px 0 var(--ink); transform: rotate(var(--r)); animation: c-pega 0.5s both; animation-delay: calc(var(--i) * 180ms + 0.5s); }
+.c .it { display: flex; align-items: center; padding: 16px; margin-bottom: 34px; border-radius: 24px; box-shadow: 10px 10px 0 var(--ink); transform: rotate(var(--r)); animation: c-pega 0.5s both; animation-delay: calc(var(--i) * 180ms + 0.5s); }
 .c .it > div { min-width: 0; }
 .c .it.nothumb img { display: none; }
-.c .it img { width: 256px; height: 144px; object-fit: cover; border: 4px solid var(--ink); border-radius: 14px; flex-shrink: 0; background: var(--paper); }
+.c .it img { margin-right: 26px; width: 256px; height: 144px; object-fit: cover; border: 4px solid var(--ink); border-radius: 14px; flex-shrink: 0; background: var(--paper); }
 .c .it small { display: block; font-size: 26px; font-weight: 700; color: var(--bo); margin-bottom: 6px; }
-.c .it b { display: block; font-size: 44px; line-height: 0.95; }
+.c .it b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 44px; line-height: 0.95; }
 .c .it em { display: inline-block; margin-top: 10px; background: var(--y); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 16px; font-style: normal; font-size: 24px; font-weight: 700; }
 
 /* ---------- Curso (B · tablero, tiquete blanco) ---------- */
@@ -97,19 +100,21 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b .izq { padding: 40px; min-width: 0; }
 .b .pic { position: relative; width: 980px; height: 551px; border-radius: 14px; overflow: hidden; background: var(--paper); }
 .b .pic img { width: 100%; height: 100%; object-fit: cover; }
-.b .pic .fb { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; padding: 40px; font-size: 96px; text-align: center; }
+.b .pic .fb { display: none; position: absolute; top: 0; right: 0; bottom: 0; left: 0; align-items: center; justify-content: center; padding: 40px; font-size: 96px; text-align: center; }
 .b .pic.nothumb img { display: none; }
 .b .pic.nothumb .fb { display: flex; }
-.b .meta { display: flex; gap: 70px; margin-top: 28px; }
+.b .meta { display: flex; margin-top: 28px; }
+.b .meta > * + * { margin-left: 70px; }
 .b .meta .nom { flex: 1; min-width: 0; }
 .b .meta .seats { flex: none; }
 .b .ticket small { display: block; font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-.b .meta b { display: block; font-size: 58px; }
+.b .meta b { display: block; font-size: 58px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .b .meta b.largo { font-size: 44px; }
 .b .meta .warn b { color: var(--bo); }
 .b .der { border-left: 5px dashed var(--ink); padding: 44px 48px; min-width: 0; }
 .b .der .f { font-size: 86px; line-height: 0.92; margin-bottom: 34px; }
-.b .cd { display: flex; align-items: flex-end; gap: 22px; }
+.b .cd { display: flex; align-items: flex-end; }
+.b .cd > * + * { margin-left: 22px; }
 .b .cd .fl { --s: 190px; --d: 600ms; }
 .b .cd .fl.n3 { --s: 130px; }
 .b .cd .fl.w6 { --s: 104px; }
@@ -153,14 +158,16 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b .aviso-t::before { top: -32px; } .b .aviso-t::after { bottom: -32px; }
 .b .aviso-t.solo { grid-template-columns: 1fr; }
 .b .aviso-t.solo::before, .b .aviso-t.solo::after { display: none; }
-.b .aviso-t .msg { padding: 70px; min-width: 0; overflow-wrap: break-word; }
+.b .aviso-t .msg { padding: 70px; min-width: 0; overflow: hidden; overflow-wrap: break-word; }
 .b .aviso-t small { display: block; font-size: 26px; font-weight: 700; margin-bottom: 20px; }
 .b .aviso-t h1 { font-size: 150px; line-height: 0.9; text-wrap: balance; }
 .b .aviso-t h1.medio { font-size: 112px; }
 .b .aviso-t h1.largo { font-size: 80px; }
+.b .aviso-t h1.xl { font-size: 60px; }
 .b .aviso-t.solo h1 { font-size: 170px; }
 .b .aviso-t.solo h1.medio { font-size: 130px; }
 .b .aviso-t.solo h1.largo { font-size: 100px; }
+.b .aviso-t.solo h1.xl { font-size: 72px; }
 .b .aviso-t .msg p { margin-top: 36px; font-size: 40px; font-weight: 700; }
 .b .aviso-t .talon { border-left: 5px dashed var(--ink); padding: 70px 44px 50px; display: flex; flex-direction: column; }
 .b .aviso-t .talon .n { font-size: 210px; line-height: 0.8; letter-spacing: -0.05em; }
@@ -169,8 +176,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b .aviso-t .talon code { display: block; margin-top: 12px; font: 700 22px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.3em; }
 
 /* ---------- Vacío ---------- */
-.b.vacio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 48px; }
-.b.vacio img { height: 96px; }
+.b.vacio { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.b.vacio img { height: 96px; margin-bottom: 48px; }
 .b.vacio h1 { font-size: 120px; text-align: center; animation: m-entra 0.7s 0.2s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
 
 /* ---------- Animaciones (solo transform y opacity) ---------- */

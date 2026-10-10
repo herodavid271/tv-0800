@@ -30,8 +30,3 @@ export function formatLong(iso) {
   const { y, m, d } = parseISO(iso);
   return `${DIAS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${d} de ${MESES[m - 1]}`;
 }
-
-export function formatShort(iso) {
-  const { m, d } = parseISO(iso);
-  return `${d} ${MESES[m - 1].slice(0, 3)}`;
-}

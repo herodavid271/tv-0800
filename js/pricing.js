@@ -1,6 +1,7 @@
 // Precio final en centavos: round(precio_base * (100 - porcentaje)) / 100.
 export function applyDiscount(price, percent) {
-  return Math.round(price * (100 - percent)) / 100;
+  const cents = Math.round(price * 100);
+  return Math.round(cents * (100 - percent) / 100) / 100;
 }
 
 export function formatPrice(n) {
@@ -13,6 +14,6 @@ export function buildPriceRows(courses, percent) {
     .map((c) => {
       const before = c.basePrice;
       const after = applyDiscount(before, percent);
-      return { slug: c.slug, name: c.name, before, after, saving: Math.round((before - after) * 100) / 100 };
+      return { slug: c.slug, name: c.name, before, after, saving: (Math.round(before * 100) - Math.round(after * 100)) / 100 };
     });
 }

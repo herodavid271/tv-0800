@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { localISO, parseISO, daysBetween, addDaysISO, formatLong, formatShort } from '../js/dates.js';
+import { localISO, parseISO, daysBetween, addDaysISO, formatLong } from '../js/dates.js';
 
 test('localISO usa los componentes locales', () => {
   assert.equal(localISO(new Date(2026, 9, 5, 23, 59)), '2026-10-05');
@@ -26,6 +26,3 @@ test('formatLong escribe día de la semana, día y mes', () => {
   assert.equal(formatLong('2026-10-15'), 'jueves 15 de octubre');
 });
 
-test('formatShort abrevia el mes a 3 letras', () => {
-  assert.equal(formatShort('2026-10-05'), '5 oct');
-});

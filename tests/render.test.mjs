@@ -158,6 +158,13 @@ test('announcementScreen sin fecha ni nota: sin talón, sin código', () => {
   assert.match(h, /solo/);
 });
 
+test('announcementScreen: título muy largo usa el nivel xl', () => {
+  const xl = announcementScreen({ ...DEFAULT_CONFIG, announcement_title: 'x'.repeat(120) }, TODAY);
+  assert.match(xl, /class="d xl"/);
+  assert.doesNotMatch(xl, /largo/);
+  assert.match(announcementScreen({ ...DEFAULT_CONFIG, announcement_title: 'x'.repeat(100) }, TODAY), /class="d largo"/);
+});
+
 test('announcementScreen: título largo baja de tamaño', () => {
   const largo = 'x'.repeat(70);
   assert.match(announcementScreen({ ...DEFAULT_CONFIG, announcement_title: largo }, TODAY), /class="[^"]*largo/);

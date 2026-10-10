@@ -7,11 +7,18 @@ export function daysUntil(startISO, todayISO) {
   return daysBetween(todayISO, startISO);
 }
 
-export function badgeFor(days) {
-  if (days < 0) return 'EN CURSO';
-  if (days === 0) return 'HOY';
-  if (days === 1) return 'MAÑANA';
-  return null;
+const sameScreen = (a, b) =>
+  a.type === b.type && (a.type !== 'curso' || a.course?.slug === b.course?.slug);
+
+// Indice de la pantalla equivalente en la lista nueva; si no existe, el ultimo
+// (el siguiente next() vuelve a la pantalla 0).
+export function findScreenIndex(oldScreens, oldIndex, newScreens) {
+  const prev = oldScreens[oldIndex];
+  if (prev) {
+    const i = newScreens.findIndex((s) => sameScreen(prev, s));
+    if (i >= 0) return i;
+  }
+  return newScreens.length - 1;
 }
 
 export function seatState(course) {
