@@ -31,6 +31,8 @@ function icon(name) {
   s.innerHTML = ICONS[name]; // constante propia, nunca datos
   return s;
 }
+const DEFAULT_EMAIL = 'hola@davidsantana.net';
+
 export function start(api, root) {
   const S = {
     session: null, view: 'pantalla', live: DEFAULT_LIVE, courses: [], online: true,
