@@ -116,3 +116,39 @@ test('loadSnapshot tolera storage nulo', async () => {
   const snap = await loadSnapshot({ editions: async () => ROWS, config: async () => null }, null);
   assert.equal(snap.online, true);
 });
+
+const okFetch = (body) => async () => ({ ok: true, status: 200, json: async () => body });
+const memStorage = (initial = {}) => {
+  const m = new Map(Object.entries(initial));
+  return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, v) };
+};
+const failingClient = { editions: async () => { throw new Error('offline'); }, config: async () => null };
+
+test('createClient pasa una señal de timeout (AbortSignal) a fetch', async () => {
+  let seen;
+  const fetchImpl = async (_url, init) => { seen = init; return { ok: true, status: 200, json: async () => [] }; };
+  await createClient({ url: 'http://x', key: 'k', fetchImpl }).editions();
+  assert.ok(seen.signal instanceof AbortSignal);
+});
+
+test('createClient rechaza con HTTP 500 si la respuesta no es ok', async () => {
+  const fetchImpl = async () => ({ ok: false, status: 500 });
+  await assert.rejects(createClient({ url: 'http://x', key: 'k', fetchImpl }).editions(), { message: 'HTTP 500' });
+});
+
+test('loadSnapshot ignora una cache sin arreglo rows', async () => {
+  const storage = memStorage({ 'tv0800.cache.v1': '{}' });
+  assert.equal(await loadSnapshot(failingClient, storage), null);
+});
+
+test('loadSnapshot ignora una cache con JSON invalido', async () => {
+  const storage = memStorage({ 'tv0800.cache.v1': 'not json' });
+  assert.equal(await loadSnapshot(failingClient, storage), null);
+});
+
+test('loadSnapshot sigue en línea si setItem lanza error', async () => {
+  const storage = { getItem: () => null, setItem: () => { throw new Error('quota'); } };
+  const client = { editions: async () => [], config: async () => null };
+  const snap = await loadSnapshot(client, storage);
+  assert.equal(snap.online, true);
+});

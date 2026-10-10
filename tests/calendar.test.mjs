@@ -47,3 +47,7 @@ test('buildMonthGrid marca todos los días de una edición de varios días y no 
   assert.deepEqual([15, 16, 17].map((d) => cells.find((c) => c.day === d).marked.length), [1, 1, 1]);
   assert.equal(cells.find((c) => c.day === 5).marked.length, 0);
 });
+
+test('monthToShow usa el mes de hoy si una edición empezó el mes pasado y sigue en curso', () => {
+  assert.deepEqual(monthToShow('2026-10-01', [course('a', '2026-09-30', '2026-10-02')]), { year: 2026, month: 9 });
+});

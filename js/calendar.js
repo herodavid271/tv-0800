@@ -1,7 +1,10 @@
 import { MESES, parseISO, addDaysISO, daysBetween } from './dates.js';
 
 export function monthToShow(todayISO, courses) {
-  const upcoming = courses.filter((c) => !c.finished).map((c) => c.startDate).sort();
+  const upcoming = courses
+    .filter((c) => !c.finished)
+    .map((c) => (c.startDate > todayISO ? c.startDate : todayISO))
+    .sort();
   const t = parseISO(todayISO);
   const thisMonth = todayISO.slice(0, 7);
   const useToday = upcoming.length === 0 || upcoming.some((iso) => iso.startsWith(thisMonth));

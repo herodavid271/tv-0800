@@ -54,7 +54,7 @@ export function pickCourses(rows, todayISO) {
 export function createClient({ url, key, fetchImpl = (...a) => fetch(...a) }) {
   const headers = { apikey: key, 'Content-Type': 'application/json' };
   async function call(path, init = {}) {
-    const res = await fetchImpl(`${url}/rest/v1/${path}`, { headers, ...init });
+    const res = await fetchImpl(`${url}/rest/v1/${path}`, { headers, signal: AbortSignal.timeout(10000), ...init });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   }
@@ -92,7 +92,7 @@ export async function loadSnapshot(client, storage) {
     return { rows: snap.rows, config: snap.config, online: true };
   } catch {
     const cached = readCache(storage);
-    if (!cached) return null;
+    if (!cached || !Array.isArray(cached.rows)) return null;
     return { rows: cached.rows, config: normalizeConfig(cached.config), online: false };
   }
 }
