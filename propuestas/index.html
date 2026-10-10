@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuestas TV 0800</title>
+<style>
+@font-face { font-family: 'Creato Display Black'; src: url(../assets/fonts/CreatoDisplay-Black.otf) format('opentype'); font-weight: 900; font-display: swap; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0e0e0e; color: #f5f5f5; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px clamp(16px, 4vw, 56px) 80px; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; margin-bottom: 14px; }
+header img { height: 40px; }
+h1 { font-family: 'Creato Display Black', sans-serif; font-size: clamp(30px, 5vw, 52px); letter-spacing: -0.03em; line-height: 0.95; }
+.intro { max-width: 68ch; color: #a8a8a8; font-size: 17px; line-height: 1.5; margin-bottom: 14px; }
+button { font: 700 15px 'Helvetica Neue', Arial, sans-serif; background: #ffe200; color: #0e0e0e; border: 0; border-radius: 999px; padding: 12px 20px; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 3px solid #ffe200; outline-offset: 4px; }
+section { margin-top: 56px; }
+h2 { font-family: 'Creato Display Black', sans-serif; font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.03em; }
+h2 span { color: #ffe200; }
+section > p { max-width: 68ch; color: #a8a8a8; font-size: 17px; line-height: 1.5; margin: 8px 0 22px; }
+.shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 22px; }
+.shot { display: block; color: inherit; text-decoration: none; }
+.frame { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 10px; background: #000; }
+.frame iframe { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; border: 0; transform-origin: 0 0; pointer-events: none; }
+.shot b { display: block; margin-top: 10px; font-size: 16px; }
+.shot small { color: #a8a8a8; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <img src="../assets/logo-0800-blanco.png" alt="0800">
+  <h1>Tres direcciones para el TV</h1>
+  <button type="button" id="replay">Repetir animaciones</button>
+</header>
+<p class="intro">Cada dirección trae sus tres pantallas: calendario, curso y resumen. Son maquetas con los datos reales de hoy. Toca una para verla a pantalla completa; se pueden mezclar pantallas de distintas direcciones.</p>
+
+<section>
+  <h2><span>A</span> Póster</h2>
+  <p>Cartel tipográfico. Amarillo a sangre, tinta y números gigantes. Entra en bloques y cortes; una cinta corre abajo con las fechas.</p>
+  <div class="shots">
+    <a class="shot" href="a-calendario.html"><div class="frame"><iframe src="a-calendario.html" title="A calendario" loading="lazy"></iframe></div><b>Calendario</b><small>El mes en grande y un panel con las tres fechas</small></a>
+    <a class="shot" href="a-curso.html"><div class="frame"><iframe src="a-curso.html" title="A curso" loading="lazy"></iframe></div><b>Curso</b><small>El día en 620 px y los 60 puestos dibujados</small></a>
+    <a class="shot" href="a-resumen.html"><div class="frame"><iframe src="a-resumen.html" title="A resumen" loading="lazy"></iframe></div><b>Resumen</b><small>Tres filas de cartel</small></a>
+  </div>
+</section>
+
+<section>
+  <h2><span>B</span> Tablero</h2>
+  <p>Tablero de salidas. Negro, fichas que giran en cascada y el curso como pase de abordar amarillo.</p>
+  <div class="shots">
+    <a class="shot" href="b-calendario.html"><div class="frame"><iframe src="b-calendario.html" title="B calendario" loading="lazy"></iframe></div><b>Calendario</b><small>El mes en fichas</small></a>
+    <a class="shot" href="b-curso.html"><div class="frame"><iframe src="b-curso.html" title="B curso" loading="lazy"></iframe></div><b>Curso</b><small>Pase de abordar con cuenta regresiva</small></a>
+    <a class="shot" href="b-resumen.html"><div class="frame"><iframe src="b-resumen.html" title="B resumen" loading="lazy"></iframe></div><b>Resumen</b><small>Tablero de salidas</small></a>
+  </div>
+</section>
+
+<section>
+  <h2><span>C</span> Sticker</h2>
+  <p>Collage ilustrado, en el lenguaje de las miniaturas: contornos gruesos, nubes, stickers que caen pegados y una estrella que gira.</p>
+  <div class="shots">
+    <a class="shot" href="c-calendario.html"><div class="frame"><iframe src="c-calendario.html" title="C calendario" loading="lazy"></iframe></div><b>Calendario</b><small>Calendario de pared con stickers</small></a>
+    <a class="shot" href="c-curso.html"><div class="frame"><iframe src="c-curso.html" title="C curso" loading="lazy"></iframe></div><b>Curso</b><small>Foto pegada con cinta y hoja del día</small></a>
+    <a class="shot" href="c-resumen.html"><div class="frame"><iframe src="c-resumen.html" title="C resumen" loading="lazy"></iframe></div><b>Resumen</b><small>Tres cartas en abanico</small></a>
+  </div>
+</section>
+
+<script>
+const frames = [...document.querySelectorAll('.frame')];
+function scale() {
+  for (const f of frames) f.firstElementChild.style.transform = `scale(${f.clientWidth / 1920})`;
+}
+scale();
+addEventListener('resize', scale);
+document.getElementById('replay').addEventListener('click', () => {
+  for (const f of frames) { const i = f.firstElementChild; i.src = i.src; }
+});
+</script>
+</body>
+</html>
