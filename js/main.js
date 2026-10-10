@@ -67,6 +67,7 @@ function html(screen) {
   }
 }
 
+const lockSigOf = (res) => JSON.stringify([res.key, visibleCourses().map((c) => [c.slug, c.availableSeats, c.basePrice, c.finished])]);
 const sigNow = () => liveSignature(state.live, visibleCourses(), localISO());
 
 function show() {
@@ -100,6 +101,16 @@ async function refresh() {
     state.loaded = true;
   } else if (!state.loaded) {
     state.online = false;
+  }
+  if (state.locked !== null && state.loaded) {
+    const res = resolveScreen(state.live, visibleCourses(), state.config, localISO());
+    if (res && res.key === state.locked) {
+      const sig = lockSigOf(res);
+      if (sig !== state.lockSig) {
+        state.lockSig = sig;
+        renderLocked(res);
+      }
+    }
   }
   const wasSingle = state.screens.length <= 1;
   rebuild();
@@ -148,6 +159,7 @@ async function liveTick() {
   }
   const hadPlayers = state.live.players.length > 0;
   state.live = normalizeLive(raw);
+  if (!state.loaded) return; // sin cursos cargados no se fija ni se pinta nada
   const today = localISO();
   const res = resolveScreen(state.live, visibleCourses(), state.config, today);
 
@@ -155,6 +167,7 @@ async function liveTick() {
     if (res.key !== state.locked) {
       if (state.locked === null) state.resume = { screens: state.screens, index: state.index };
       state.locked = res.key;
+      state.lockSig = lockSigOf(res);
       renderLocked(res);
     } else if (res.screen.type === 'competencia' && sigNow() !== state.lastSig) {
       renderLocked(res);

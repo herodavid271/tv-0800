@@ -141,3 +141,51 @@ test('api: live() normaliza y auth usa shouldCreateUser false', async () => {
     ['verify', { email: 'a@b.c', token: '123456', type: 'email' }],
   ]);
 });
+
+// ---- reintento tras refrescar la sesión
+function seqLib(results) {
+  const calls = [];
+  let refreshed = 0;
+  const lib = {
+    createClient: () => ({
+      rpc: async (name) => { calls.push(name); return results.shift(); },
+      auth: {
+        refreshSession: async () => { refreshed += 1; return { data: {}, error: null }; },
+        startAutoRefresh() {}, stopAutoRefresh() {},
+      },
+    }),
+  };
+  return { lib, calls, refreshed: () => refreshed };
+}
+
+test('api: JWT expired refresca la sesion una vez y reintenta', async () => {
+  const { lib, calls, refreshed } = seqLib([
+    { data: null, error: { message: 'JWT expired', status: 401 } },
+    { data: null, error: null },
+  ]);
+  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
+  await api.undo();
+  assert.equal(refreshed(), 1);
+  assert.equal(calls.length, 2);
+});
+
+test('api: si el reintento tambien falla con auth, rechaza', async () => {
+  const { lib, calls, refreshed } = seqLib([
+    { data: null, error: { message: 'JWT expired', status: 401 } },
+    { data: null, error: { message: 'JWT expired', status: 401 } },
+  ]);
+  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
+  await assert.rejects(api.undo(), (e) => e.code === 'auth');
+  assert.equal(refreshed(), 1);
+  assert.equal(calls.length, 2);
+});
+
+test('api: forbidden y luego exito tras refrescar resuelve', async () => {
+  const { lib, refreshed } = seqLib([
+    { data: null, error: { message: 'forbidden' } },
+    { data: null, error: null },
+  ]);
+  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
+  await api.undo();
+  assert.equal(refreshed(), 1);
+});

@@ -29,7 +29,7 @@ export function createApi({ url, key, supabaseLib = globalThis.window?.supabase 
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
   });
 
-  async function rpc(name, args = {}) {
+  async function rpcOnce(name, args) {
     let res;
     try {
       res = await client.rpc(name, args);
@@ -38,6 +38,24 @@ export function createApi({ url, key, supabaseLib = globalThis.window?.supabase 
     }
     if (res.error) throw mapError(res.error);
     return res.data;
+  }
+
+  // Un fallo de auth/forbidden se reintenta UNA vez tras refrescar la sesión.
+  async function rpc(name, args = {}) {
+    try {
+      return await rpcOnce(name, args);
+    } catch (e) {
+      if (e.code !== 'auth' && e.code !== 'forbidden') throw e;
+      try { await client.auth.refreshSession?.(); } catch { /* el reintento decide */ }
+      return rpcOnce(name, args);
+    }
+  }
+
+  if (typeof document !== 'undefined' && client.auth.startAutoRefresh) {
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) client.auth.startAutoRefresh();
+      else client.auth.stopAutoRefresh();
+    });
   }
 
   async function authCall(p) {
@@ -62,7 +80,7 @@ export function createApi({ url, key, supabaseLib = globalThis.window?.supabase 
         return null;
       }
     },
-    signOut: () => authCall(client.auth.signOut()),
+    signOut: () => authCall(client.auth.signOut({ scope: 'local' })),
     onAuth: (cb) => client.auth.onAuthStateChange((_event, session) => cb(session)),
     pin: (screen) => rpc('tv_pin', { p_screen: screen }),
     auto: () => rpc('tv_auto'),

@@ -3,8 +3,8 @@
 @font-face { font-family: 'Creato Display Black'; src: url(../assets/fonts/CreatoDisplay-Black.otf) format('opentype'); font-weight: 900; font-display: swap; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: #050505; -webkit-text-size-adjust: 100%; }
-body { background: #050505; }
+html { background: #050505; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+body { background: #050505; overscroll-behavior: none; }
 
 .ph {
   --tabs-h: 88px;
@@ -107,3 +107,10 @@ body { background: #050505; }
 .ph .aviso { position: fixed; left: 20px; right: 20px; bottom: calc(var(--tabs-h) + env(safe-area-inset-bottom, 0px) + 12px); z-index: 9; max-width: 520px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 8px 16px; border-radius: 14px; background: #f5f5f5; color: #0e0e0e; font-size: 15px; font-weight: 800; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5); }
 .ph .aviso.error { background: #a3243b; color: #fff; }
 .ph .aviso button { margin-left: 12px; padding: 10px 4px; color: #a3243b; font-weight: 800; }
+
+/* Toques fiables en iOS: sin zoom por doble toque, sin selección, sin resaltado. */
+.ph button, .ph .tab, .ph .esc, .ph .chip, .ph .drop, .ph .fila .mas {
+  touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.ph input { -webkit-user-select: text; user-select: text; }
+.ph .fila .mas.pend { opacity: 0.45; }

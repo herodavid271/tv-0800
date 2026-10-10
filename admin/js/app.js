@@ -46,6 +46,7 @@ export function start(api, root) {
   const S = {
     session: null, view: 'pantalla', live: DEFAULT_LIVE, courses: [], online: true,
     pct: readPct(), pending: new Set(), mutTok: 0, armedReset: false, resetTimer: null, toastTimer: null,
+    scoreSeq: 0, scoring: {}, repoll: false, lastSig: null,
     started: false, loginMsg: '', loginStep: 'email', email: '', draftName: '',
   };
 
@@ -95,12 +96,17 @@ export function start(api, root) {
   const setState = (patch) => { S.live = { ...S.live, state: { ...S.live.state, ...patch } }; };
 
   const actions = {
-    pin: (id) => run('pin', async () => { setState({ mode: 'pin', pin_screen: id }); renderLive(); await api.pin(id); }),
-    auto: () => run('pin', async () => { setState({ mode: 'auto', pin_screen: null }); renderLive(); await api.auto(); }),
-    drop: () => run('drop', async () => { setState({ drop_active: true, drop_percent: S.pct }); renderLive(); await api.drop(S.pct); }),
-    dropOff: () => run('drop', async () => { setState({ drop_active: false, drop_percent: 0 }); renderLive(); await api.dropOff(); }),
+    pin: async (id) => { await run('pin', async () => { setState({ mode: 'pin', pin_screen: id }); renderLive(); await api.pin(id); }); pollLive(true); },
+    auto: async () => { await run('pin', async () => { setState({ mode: 'auto', pin_screen: null }); renderLive(); await api.auto(); }); pollLive(true); },
+    drop: async () => { await run('drop', async () => { setState({ drop_active: true, drop_percent: S.pct }); renderLive(); await api.drop(S.pct); }); pollLive(true); },
+    dropOff: async () => { await run('drop', async () => { setState({ drop_active: false, drop_percent: 0 }); renderLive(); await api.dropOff(); }); pollLive(true); },
     async score(p) {
-      const r = await run(`score:${p.id}`, () => api.score(p.id));
+      S.scoreSeq += 1;
+      S.scoring[p.id] = (S.scoring[p.id] || 0) + 1;
+      const r = await run(`score:${p.id}:${S.scoreSeq}`, () => api.score(p.id));
+      S.scoring[p.id] -= 1;
+      if (!S.scoring[p.id]) delete S.scoring[p.id];
+      renderLive();
       if (r) toast(`${p.name} +1`, { action: { label: 'Deshacer', run: actions.undo } });
       pollLive(true);
     },
@@ -170,6 +176,7 @@ export function start(api, root) {
     root.className = 'ph';
     root.textContent = '';
     dyn = {};
+    S.lastSig = null;
     root.appendChild(header());
     if (S.view === 'pantalla') buildPantalla();
     else if (S.view === 'drop') buildDrop();
@@ -253,6 +260,11 @@ export function start(api, root) {
   // ---------- pintado de lo que cambia con cada consulta
   function renderLive() {
     if (!S.started || !dyn.estado) return;
+    const nowMs = Date.parse(S.live.serverTime);
+    const recentId = S.live.players.find((p) => !Number.isNaN(nowMs) && p.lastScoredAt && nowMs - Date.parse(p.lastScoredAt) < RECENT_MS)?.id ?? null;
+    const sig = JSON.stringify([S.view, { ...S.live, serverTime: null }, recentId, S.courses, [...S.pending], S.scoring, S.armedReset, S.pct, S.online]);
+    if (sig === S.lastSig) return;
+    S.lastSig = sig;
     dyn.estado.classList.toggle('off', !S.online);
     dyn.estado.lastChild.textContent = S.online ? 'TV conectado' : 'Sin conexión';
     for (const [id, b] of Object.entries(dyn.tabs || {})) b.classList.toggle('on', id === S.view);
@@ -306,7 +318,7 @@ export function start(api, root) {
         const more = el('button', 'mas', '+1');
         more.type = 'button';
         more.setAttribute('aria-label', `Sumar un punto a ${r.name}`);
-        more.disabled = busy(`score:${r.id}`);
+        more.classList.toggle('pend', !!S.scoring[r.id]);
         more.addEventListener('click', () => actions.score(r));
         f.append(el('span', 'n', String(r.rank)), el('span', 'nom', r.name), el('span', 'pts', String(r.points)), more);
         dyn.lista.appendChild(f);
@@ -393,7 +405,7 @@ export function start(api, root) {
   let liveInFlight = false;
   async function pollLive(now = false) {
     if (now) { clearTimeout(liveTimer); liveTimer = null; }
-    if (liveInFlight) return;
+    if (liveInFlight) { if (now) S.repoll = true; return; }
     liveInFlight = true;
     const tok = S.mutTok;
     try {
@@ -406,7 +418,8 @@ export function start(api, root) {
       liveInFlight = false;
       renderLive();
       clearTimeout(liveTimer);
-      liveTimer = setTimeout(pollLive, LIVE_MS);
+      if (S.repoll) { S.repoll = false; pollLive(true); }
+      else liveTimer = setTimeout(pollLive, LIVE_MS);
     }
   }
   async function pollEditions() {
