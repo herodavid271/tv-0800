@@ -28,11 +28,10 @@ export function createFakeApi({ signedIn = true } = {}) {
   const need = () => { if (!session) { const e = new Error('auth'); e.code = 'auth'; throw e; } };
 
   return {
-    signInEmail: () => wait(null),
-    async verifyCode(email, token) {
+    async login(email, password) {
       await wait(null);
-      if (token !== '123456') { const e = new Error('Código incorrecto o vencido'); e.code = 'error'; throw e; }
-      session = { user: { email } };
+      if (password !== 'clave-de-prueba') { const e = new Error(''); e.code = 'invalid'; throw e; }
+      session = { token: 'x' };
       listener(session);
       return {};
     },

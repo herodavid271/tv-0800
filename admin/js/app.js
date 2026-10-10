@@ -42,12 +42,14 @@ function savePct(v) {
   try { localStorage.setItem(DROP_KEY, String(v)); } catch { /* sin almacenamiento */ }
 }
 
+const DEFAULT_EMAIL = 'hola@davidsantana.net';
+
 export function start(api, root) {
   const S = {
     session: null, view: 'pantalla', live: DEFAULT_LIVE, courses: [], online: true,
     pct: readPct(), pending: new Set(), mutTok: 0, armedReset: false, resetTimer: null, toastTimer: null,
     scoreSeq: 0, scoring: {}, repoll: false, lastSig: null,
-    started: false, loginMsg: '', loginStep: 'email', email: '', draftName: '',
+    started: false, loginMsg: '', email: '', draftName: '',
   };
 
   // ---------- avisos
@@ -340,64 +342,53 @@ export function start(api, root) {
     const box = el('div', 'login');
     const logo = el('img', 'logo');
     logo.src = LOGO; logo.alt = '0800';
-    const msg = el('p', 'nota' + (S.loginMsg ? ' err' : ''), S.loginMsg || 'Solo entran administradores del Hub. El teléfono te recuerda: no tendrás que repetir esto cada clase.');
+    const msg = el('p', 'nota' + (S.loginMsg ? ' err' : ''), S.loginMsg || 'El teléfono te recuerda: no tendrás que repetir esto cada clase.');
     msg.setAttribute('role', 'status');
 
     const emailLabel = el('label', 'campo');
     emailLabel.appendChild(el('span', null, 'Correo'));
     const email = el('input');
-    email.type = 'email'; email.placeholder = 'tucorreo@ejemplo.com'; email.autocomplete = 'email';
+    email.type = 'email'; email.autocomplete = 'username';
     email.setAttribute('autocapitalize', 'off'); email.setAttribute('autocorrect', 'off'); email.inputMode = 'email';
-    email.value = S.email;
+    email.value = S.email || DEFAULT_EMAIL;
     emailLabel.appendChild(email);
-    const send = el('button', 'boton', 'Enviar código');
-    send.type = 'button';
 
-    const codeWrap = el('label', 'campo');
-    codeWrap.appendChild(el('span', null, 'Código del correo'));
-    const code = el('input', 'cod');
-    code.type = 'text'; code.inputMode = 'numeric'; code.maxLength = 6; code.placeholder = '······';
-    code.setAttribute('autocomplete', 'one-time-code'); code.setAttribute('pattern', '[0-9]*');
-    code.addEventListener('input', () => { code.value = code.value.replace(/\D/g, '').slice(0, 6); });
-    codeWrap.appendChild(code);
+    const passLabel = el('label', 'campo');
+    passLabel.appendChild(el('span', null, 'Clave'));
+    const pass = el('input');
+    pass.type = 'password'; pass.autocomplete = 'current-password'; pass.maxLength = 200;
+    passLabel.appendChild(pass);
     const enter = el('button', 'boton', 'Entrar');
     enter.type = 'button';
 
-    const setStep = (step) => {
-      S.loginStep = step;
-      codeWrap.hidden = enter.hidden = step !== 'code';
-      send.textContent = step === 'code' ? 'Reenviar código' : 'Enviar código';
-      send.classList.toggle('sec2', step === 'code');
-    };
     const note = (t, err) => { msg.textContent = t; msg.className = 'nota' + (err ? ' err' : ''); };
+    const wait = (secs) => {
+      const m = Math.ceil(secs / 60);
+      return m > 1 ? `${m} minutos` : 'un minuto';
+    };
 
-    send.addEventListener('click', async () => {
-      const v = email.value.trim();
-      if (!v || !email.checkValidity()) { note('Escribe tu correo del Hub', true); return; }
-      S.email = v; send.disabled = true;
-      try {
-        await api.signInEmail(v);
-        setStep('code'); note('Te enviamos un código de 6 dígitos. Revisa tu correo.'); code.focus();
-      } catch (e) { note(e.code === 'offline' ? e.message : 'No se pudo enviar el código. Revisa el correo.', true); }
-      finally { send.disabled = false; }
-    });
     enter.addEventListener('click', async () => {
-      if (code.value.length !== 6) { note('El código tiene 6 dígitos', true); return; }
-      enter.disabled = true;
+      const v = email.value.trim();
+      if (!v || !pass.value) { note('Escribe tu correo y tu clave', true); return; }
+      S.email = v; enter.disabled = true;
       try {
-        await api.verifyCode(S.email || email.value.trim(), code.value);
+        await api.login(v, pass.value);
+        pass.value = '';
         S.loginMsg = '';
         S.session = await api.session();
         if (S.session) { S.view = 'pantalla'; showApp(); }
-      } catch (e) { note(e.code === 'offline' ? e.message : 'Código incorrecto o vencido', true); code.select(); }
-      finally { enter.disabled = false; }
+      } catch (e) {
+        if (e.code === 'offline') note(e.message, true);
+        else if (e.code === 'locked') note(`Demasiados intentos. Espera ${wait(e.retrySeconds)} e intenta de nuevo.`, true);
+        else note('Correo o clave incorrectos', true);
+        pass.select();
+      } finally { enter.disabled = false; }
     });
-    code.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') enter.click(); });
-    email.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') send.click(); });
+    pass.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') enter.click(); });
+    email.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') pass.focus(); });
 
-    box.append(logo, el('h1', 'd', 'Control del TV'), el('p', 'sub', 'Entra con tu correo del Hub. Te llega un código de 6 dígitos.'), emailLabel, send, codeWrap, enter, msg);
+    box.append(logo, el('h1', 'd', 'Control del TV'), el('p', 'sub', 'Entra con tu clave.'), emailLabel, passLabel, enter, msg);
     root.appendChild(box);
-    setStep(S.loginStep);
   }
 
   // ---------- consultas periódicas

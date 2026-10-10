@@ -75,6 +75,12 @@ test('playerRows: posición, nombre y puntos en orden', () => {
 });
 
 // ---- api.js con una librería falsa
+const memStore = (init = {}) => {
+  const m = { ...init };
+  return { getItem: (k) => m[k] ?? null, setItem: (k, v) => { m[k] = String(v); }, removeItem: (k) => { delete m[k]; }, m };
+};
+const TOKEN = 'a'.repeat(64);
+
 function fakeLib({ rpcResult, rpcError, rpcThrow } = {}) {
   const calls = [];
   const lib = {
@@ -84,36 +90,28 @@ function fakeLib({ rpcResult, rpcError, rpcThrow } = {}) {
         if (rpcThrow) throw rpcThrow;
         return { data: rpcResult ?? null, error: rpcError ?? null };
       },
-      auth: {
-        signInWithOtp: async (a) => { calls.push(['otp', a]); return { error: null }; },
-        verifyOtp: async (a) => { calls.push(['verify', a]); return { data: { session: {} }, error: null }; },
-        getSession: async () => ({ data: { session: { user: {} } } }),
-        onAuthStateChange: (cb) => ({ data: { subscription: { unsubscribe() {} } } }),
-        signOut: async () => ({ error: null }),
-      },
     }),
   };
   return { lib, calls };
 }
+const mk = (lib, store = memStore({ 'tv0800.admin': TOKEN })) => createApi({ url: 'u', key: 'k', supabaseLib: lib, storage: store });
 
 test('api: forbidden se mapea al mensaje en español', async () => {
   const { lib } = fakeLib({ rpcError: { message: 'forbidden' } });
-  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
-  await assert.rejects(api.auto(), (e) => e.message === MSG_FORBIDDEN && e.code === 'forbidden');
-  assert.equal(MSG_FORBIDDEN, 'Tu usuario no tiene permiso para controlar el TV');
+  await assert.rejects(mk(lib).auto(), (e) => e.message === MSG_FORBIDDEN && e.code === 'forbidden');
+  assert.equal(MSG_FORBIDDEN, 'Tu sesión terminó, entra de nuevo');
 });
 
 test('api: fallo de red se mapea a "Sin conexión, reintenta"', async () => {
   const { lib } = fakeLib({ rpcThrow: new TypeError('Failed to fetch') });
-  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
-  await assert.rejects(api.score('x'), (e) => e.message === MSG_OFFLINE && e.code === 'offline');
+  await assert.rejects(mk(lib).score('x'), (e) => e.message === MSG_OFFLINE && e.code === 'offline');
   const { lib: lib2 } = fakeLib({ rpcError: { message: 'TypeError: Failed to fetch' } });
-  await assert.rejects(createApi({ url: 'u', key: 'k', supabaseLib: lib2 }).live(), (e) => e.message === MSG_OFFLINE);
+  await assert.rejects(mk(lib2).live(), (e) => e.message === MSG_OFFLINE);
 });
 
-test('api: llamadas RPC con los nombres y argumentos del servidor', async () => {
+test('api: las escrituras llevan el token y las lecturas no', async () => {
   const { lib, calls } = fakeLib({ rpcResult: null });
-  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
+  const api = mk(lib);
   await api.pin('calendario');
   await api.drop(30);
   await api.dropOff();
@@ -123,69 +121,62 @@ test('api: llamadas RPC con los nombres y argumentos del servidor', async () => 
   await api.undo();
   await api.resetCompetition();
   await api.auto();
+  await api.live();
+  await api.editions();
+  const t = { p_token: TOKEN };
   assert.deepEqual(calls, [
-    ['tv_pin', { p_screen: 'calendario' }], ['tv_drop', { p_percent: 30 }], ['tv_drop_off', {}],
-    ['tv_player_add', { p_name: 'Ana' }], ['tv_player_remove', { p_id: 'id1' }], ['tv_score', { p_id: 'id1' }],
-    ['tv_undo', {}], ['tv_competition_reset', {}], ['tv_auto', {}],
+    ['tv_pin', { ...t, p_screen: 'calendario' }], ['tv_drop', { ...t, p_percent: 30 }], ['tv_drop_off', t],
+    ['tv_player_add', { ...t, p_name: 'Ana' }], ['tv_player_remove', { ...t, p_id: 'id1' }], ['tv_score', { ...t, p_id: 'id1' }],
+    ['tv_undo', t], ['tv_competition_reset', t], ['tv_auto', t], ['tv_live', {}], ['tv_ediciones', {}],
   ]);
 });
 
-test('api: live() normaliza y auth usa shouldCreateUser false', async () => {
-  const { lib, calls } = fakeLib({ rpcResult: { state: { mode: 'pin', pin_screen: 'calendario' }, players: [] } });
-  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
-  assert.equal((await api.live()).state.pin_screen, 'calendario');
-  await api.signInEmail('a@b.c');
-  await api.verifyCode('a@b.c', '123456');
-  assert.deepEqual(calls.slice(1), [
-    ['otp', { email: 'a@b.c', options: { shouldCreateUser: false } }],
-    ['verify', { email: 'a@b.c', token: '123456', type: 'email' }],
-  ]);
+test('api: live() normaliza', async () => {
+  const { lib } = fakeLib({ rpcResult: { state: { mode: 'pin', pin_screen: 'calendario' }, players: [] } });
+  assert.equal((await mk(lib).live()).state.pin_screen, 'calendario');
 });
 
-// ---- reintento tras refrescar la sesión
-function seqLib(results) {
-  const calls = [];
-  let refreshed = 0;
-  const lib = {
-    createClient: () => ({
-      rpc: async (name) => { calls.push(name); return results.shift(); },
-      auth: {
-        refreshSession: async () => { refreshed += 1; return { data: {}, error: null }; },
-        startAutoRefresh() {}, stopAutoRefresh() {},
-      },
-    }),
-  };
-  return { lib, calls, refreshed: () => refreshed };
-}
-
-test('api: JWT expired refresca la sesion una vez y reintenta', async () => {
-  const { lib, calls, refreshed } = seqLib([
-    { data: null, error: { message: 'JWT expired', status: 401 } },
-    { data: null, error: null },
-  ]);
-  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
-  await api.undo();
-  assert.equal(refreshed(), 1);
-  assert.equal(calls.length, 2);
+test('api: login guarda el token y avisa a onAuth', async () => {
+  const { lib, calls } = fakeLib({ rpcResult: { token: TOKEN } });
+  const store = memStore();
+  const api = mk(lib, store);
+  const seen = [];
+  api.onAuth((s) => seen.push(s));
+  await api.login('hola@davidsantana.net', 'clave');
+  assert.deepEqual(calls[0], ['tv_login', { p_email: 'hola@davidsantana.net', p_password: 'clave' }]);
+  assert.equal(store.m['tv0800.admin'], TOKEN);
+  assert.deepEqual(seen, [{ token: TOKEN }]);
 });
 
-test('api: si el reintento tambien falla con auth, rechaza', async () => {
-  const { lib, calls, refreshed } = seqLib([
-    { data: null, error: { message: 'JWT expired', status: 401 } },
-    { data: null, error: { message: 'JWT expired', status: 401 } },
-  ]);
-  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
-  await assert.rejects(api.undo(), (e) => e.code === 'auth');
-  assert.equal(refreshed(), 1);
-  assert.equal(calls.length, 2);
+test('api: login incorrecto o bloqueado lanza el código y no guarda nada', async () => {
+  const store = memStore();
+  await assert.rejects(mk(fakeLib({ rpcResult: { error: 'invalid', retry_seconds: 0 } }).lib, store).login('a', 'b'), (e) => e.code === 'invalid');
+  await assert.rejects(
+    mk(fakeLib({ rpcResult: { error: 'locked', retry_seconds: 300 } }).lib, store).login('a', 'b'),
+    (e) => e.code === 'locked' && e.retrySeconds === 300,
+  );
+  assert.equal(store.m['tv0800.admin'], undefined);
 });
 
-test('api: forbidden y luego exito tras refrescar resuelve', async () => {
-  const { lib, refreshed } = seqLib([
-    { data: null, error: { message: 'forbidden' } },
-    { data: null, error: null },
-  ]);
-  const api = createApi({ url: 'u', key: 'k', supabaseLib: lib });
-  await api.undo();
-  assert.equal(refreshed(), 1);
+test('api: session() valida el token; si el servidor lo rechaza lo borra', async () => {
+  const store = memStore({ 'tv0800.admin': TOKEN });
+  assert.deepEqual(await mk(fakeLib({ rpcResult: true }).lib, store).session(), { token: TOKEN });
+  assert.equal(await mk(fakeLib({ rpcResult: false }).lib, store).session(), null);
+  assert.equal(store.m['tv0800.admin'], undefined);
+  assert.equal(await mk(fakeLib({ rpcResult: true }).lib, memStore()).session(), null);
+});
+
+test('api: sin red, session() conserva el token', async () => {
+  const store = memStore({ 'tv0800.admin': TOKEN });
+  const api = mk(fakeLib({ rpcThrow: new TypeError('Failed to fetch') }).lib, store);
+  assert.deepEqual(await api.session(), { token: TOKEN });
+  assert.equal(store.m['tv0800.admin'], TOKEN);
+});
+
+test('api: signOut borra el token local y avisa al servidor', async () => {
+  const { lib, calls } = fakeLib({ rpcResult: null });
+  const store = memStore({ 'tv0800.admin': TOKEN });
+  await mk(lib, store).signOut();
+  assert.equal(store.m['tv0800.admin'], undefined);
+  assert.deepEqual(calls, [['tv_logout', { p_token: TOKEN }]]);
 });
