@@ -51,10 +51,19 @@ export function pickCourses(rows, todayISO) {
   return out.sort((a, b) => Number(a.finished) - Number(b.finished) || a.startDate.localeCompare(b.startDate));
 }
 
+function timeoutSignal(ms) {
+  if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  if (typeof AbortController === 'undefined') return undefined;
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), ms);
+  t.unref?.();
+  return controller.signal;
+}
+
 export function createClient({ url, key, fetchImpl = (...a) => fetch(...a) }) {
   const headers = { apikey: key, 'Content-Type': 'application/json' };
   async function call(path, init = {}) {
-    const res = await fetchImpl(`${url}/rest/v1/${path}`, { headers, signal: AbortSignal.timeout(10000), ...init });
+    const res = await fetchImpl(`${url}/rest/v1/${path}`, { headers, signal: timeoutSignal(10000), ...init });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   }

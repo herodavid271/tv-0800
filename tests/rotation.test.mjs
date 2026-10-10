@@ -65,3 +65,8 @@ test('buildScreens: config sin pantallas válidas devuelve vacío', () => {
   const cfg = { ...DEFAULT_CONFIG, screens: ['otra'] };
   assert.deepEqual(buildScreens([course('a', '2026-10-15')], cfg, '2026-10-10'), [{ type: 'vacio' }]);
 });
+
+test('seatState: plazas nulas o ausentes no se leen como agotado', () => {
+  assert.equal(seatState({ availableSeats: null }), 'ok');
+  assert.equal(seatState({}), 'ok');
+});

@@ -14,6 +14,7 @@ export function badgeFor(days) {
 }
 
 export function seatState(course) {
+  if (course.availableSeats == null) return 'ok';
   if (course.availableSeats <= 0) return 'agotado';
   if (course.availableSeats <= LOW_SEATS) return 'pocos';
   return 'ok';

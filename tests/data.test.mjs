@@ -152,3 +152,16 @@ test('loadSnapshot sigue en línea si setItem lanza error', async () => {
   const snap = await loadSnapshot(client, storage);
   assert.equal(snap.online, true);
 });
+
+test('createClient funciona sin AbortSignal.timeout (TVs viejos)', async () => {
+  const original = AbortSignal.timeout;
+  let init;
+  try {
+    AbortSignal.timeout = undefined;
+    const fetchImpl = async (_url, i) => { init = i; return { ok: true, json: async () => [] }; };
+    await createClient({ url: 'http://x', key: 'k', fetchImpl }).editions();
+    assert.ok(init.signal instanceof AbortSignal);
+  } finally {
+    AbortSignal.timeout = original;
+  }
+});

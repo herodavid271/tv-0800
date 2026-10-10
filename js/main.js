@@ -71,12 +71,17 @@ function show() {
   clearTimeout(timer);
   const screen = state.screens[state.index];
   const secs = state.config.seconds_per_screen;
-  $('host').innerHTML = html(screen);
-  animateCounts($('host'));
-  $('progress').innerHTML = `<i style="--dur:${secs}s"></i>`;
-  $('msg').textContent = state.config.message ?? '';
-  $('stage').classList.toggle('offline', !state.online);
-  if (state.screens.length > 1) timer = setTimeout(next, secs * 1000);
+  try {
+    $('host').innerHTML = html(screen);
+    animateCounts($('host'));
+    $('progress').innerHTML = `<i style="--dur:${secs}s"></i>`;
+    $('msg').textContent = state.config.message ?? '';
+    $('stage').classList.toggle('offline', !state.online);
+  } catch (e) {
+    console.error(e);
+  } finally {
+    if (state.screens.length > 1) timer = setTimeout(next, secs * 1000);
+  }
 }
 
 function next() {
@@ -94,8 +99,9 @@ async function refresh() {
   } else if (!state.loaded) {
     state.online = false;
   }
+  const wasSingle = state.screens.length <= 1;
   rebuild();
-  if (firstLoad || state.screens.length === 1) {
+  if (firstLoad || wasSingle || state.screens.length === 1) {
     firstLoad = false;
     show();
   } else {
@@ -104,8 +110,13 @@ async function refresh() {
 }
 
 async function refreshLoop() {
-  await refresh();
-  setTimeout(refreshLoop, state.loaded ? REFRESH_MS : RETRY_MS);
+  try {
+    await refresh();
+  } catch (e) {
+    console.error(e);
+  } finally {
+    setTimeout(refreshLoop, state.loaded ? REFRESH_MS : RETRY_MS);
+  }
 }
 
 function measureFps(ms = 3000) {
