@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "tv-0800",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8080"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/serve.mjs"],
       "port": 8080
     }
   ]
