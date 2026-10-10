@@ -192,7 +192,7 @@ const lbModel = (over = {}) => ({
 test('leaderboardScreen: líder, filas y título', () => {
   const h = leaderboardScreen(lbModel());
   assert.match(h, /class="screen b competencia"/);
-  assert.match(h, /assets\/logo-badge-blanco\.png/);
+  assert.match(h, /assets\/logo-badge-negro\.png/);
   assert.match(h, /Competencia · Delega con IA/);
   assert.match(h, /<b class="d">Ana M\.<\/b><span>7 puntos<\/span>/);
   assert.match(h, /Los que vienen detrás/);

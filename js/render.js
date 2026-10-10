@@ -274,7 +274,7 @@ export function emptyScreen(text) {
 // ---------- Competencia (póster) ----------
 export function leaderboardScreen(model) {
   if (!model.leader) {
-    return `<section class="screen b competencia vacio"><img src="${LOGO_DARK}" alt="0800"><h1 class="d">Aún no hay participantes</h1></section>`;
+    return `<section class="screen b competencia vacio"><img src="${LOGO_LIGHT}" alt="0800"><h1 class="d">Aún no hay participantes</h1></section>`;
   }
   const { title, leader, others, more, recent } = model;
   const len = [...leader.name].length;
@@ -286,7 +286,7 @@ export function leaderboardScreen(model) {
   const mas = more > 0 ? `<p class="mas">+${more} más</p>` : '';
   const cinta = recent ? `<div class="cinta d">${esc(recent.name)} acaba de sumar un punto</div>` : '';
   return `<section class="screen b competencia">
-<img class="logo" src="${LOGO_DARK}" alt="0800">
+<img class="logo" src="${LOGO_LIGHT}" alt="0800">
 <p class="curso">${title ? `Competencia · ${esc(title)}` : 'Competencia'}</p>
 <p class="uno d">1</p>
 <div class="lid"><b class="d${size}">${esc(leader.name)}</b><span>${pts}</span></div>
