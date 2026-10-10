@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>B, Tablero: curso</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="tv-canvas.css">
+<link rel="stylesheet" href="tv-b.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+@font-face{font-family:'Creato Display Black';src:url(/_blob/4cb5b49774320637fb24a8344a31297c) format('opentype');font-weight:900}
+</style>
+</helmet>
+<div class="b" style="width: 1920px; height: 1080px">
+  <header class="top">
+    <img src="/_blob/6952ffa2404730332f97b37b2425b568" alt="0800">
+    <span class="fl reloj"><i>0</i><i>9</i><i>:</i><i>1</i><i>3</i></span>
+  </header>
+
+  <article class="ticket">
+    <div class="izq">
+      <img src="/_blob/ac978db198fa5acfab2888ad32970c42" alt="Delega con IA">
+      <div class="meta">
+        <p><small>Curso presencial</small><b class="d">Delega con IA</b></p>
+        <p><small>Cupos disponibles</small><b class="d">50 de 60</b></p>
+      </div>
+    </div>
+    <div class="der">
+      <small>Fecha</small>
+      <p class="f d">Jueves<br>15 de oct</p>
+      <small>Faltan</small>
+      <div class="cd"><span class="fl k"><i>0</i><i>5</i></span><b class="d">días</b></div>
+      <div class="cod" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </div>
+      <code>0800 1510 2026</code>
+    </div>
+  </article>
+
+  <footer class="pie"><span><i></i>En vivo desde 0800 Hub</span><span>sábado 10 de octubre</span></footer>
+  <div class="barra"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

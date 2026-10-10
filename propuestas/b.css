@@ -41,7 +41,7 @@
 .b .prox article:nth-of-type(1) { --d: 400ms; } .b .prox article:nth-of-type(2) { --d: 750ms; } .b .prox article:nth-of-type(3) { --d: 1100ms; }
 
 /* ---------- Curso: pase de abordar ---------- */
-.b .ticket { position: absolute; left: 120px; top: 168px; width: 1680px; height: 780px; background: var(--y); color: var(--ink); border-radius: 30px; display: grid; grid-template-columns: 1060px 1fr; transform: rotate(-1.2deg); animation: b-pase 0.8s cubic-bezier(0.2, 0.85, 0.25, 1) both; }
+.b .ticket { position: absolute; left: 120px; top: 168px; width: 1680px; height: 780px; background: #fff; color: var(--ink); border-radius: 30px; display: grid; grid-template-columns: 1060px 1fr; transform: rotate(-1.2deg); animation: b-pase 0.8s cubic-bezier(0.2, 0.85, 0.25, 1) both; }
 .b .ticket::before, .b .ticket::after { content: ''; position: absolute; left: 1028px; width: 64px; height: 64px; border-radius: 50%; background: var(--bg); }
 .b .ticket::before { top: -32px; } .b .ticket::after { bottom: -32px; }
 .b .izq { padding: 40px; }

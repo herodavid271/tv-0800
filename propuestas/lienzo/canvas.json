@@ -1,0 +1,49 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-10T16:20:35Z" },
+  "title": "Propuestas TV 0800",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1920, "h": 1080, "title": "A · Calendario" },
+    "a-curso.dc.html": { "x": 2000, "y": 0, "w": 1920, "h": 1080, "title": "A · Curso" },
+    "a-resumen.dc.html": { "x": 4000, "y": 0, "w": 1920, "h": 1080, "title": "A · Resumen" },
+    "b-calendario.dc.html": { "x": 0, "y": 1500, "w": 1920, "h": 1080, "title": "B · Calendario" },
+    "b-curso.dc.html": { "x": 2000, "y": 1500, "w": 1920, "h": 1080, "title": "B · Curso" },
+    "b-resumen.dc.html": { "x": 4000, "y": 1500, "w": 1920, "h": 1080, "title": "B · Resumen" },
+    "c-calendario.dc.html": { "x": 0, "y": 3000, "w": 1920, "h": 1080, "title": "C · Calendario" },
+    "c-curso.dc.html": { "x": 2000, "y": 3000, "w": 1920, "h": 1080, "title": "C · Curso" },
+    "c-resumen.dc.html": { "x": 4000, "y": 3000, "w": 1920, "h": 1080, "title": "C · Resumen" },
+    "d-etiquetas.dc.html": { "x": 0, "y": 4500, "w": 1920, "h": 1080, "title": "Dropoff · Etiquetas" },
+    "d-tablero.dc.html": { "x": 2000, "y": 4500, "w": 1920, "h": 1080, "title": "Dropoff · Tablero" },
+    "d-recibo.dc.html": { "x": 4000, "y": 4500, "w": 1920, "h": 1080, "title": "Dropoff · Recibo" },
+    "m-globo.dc.html": { "x": 0, "y": 6000, "w": 1920, "h": 1080, "title": "Anuncio · Globo" },
+    "m-tiquete.dc.html": { "x": 2000, "y": 6000, "w": 1920, "h": 1080, "title": "Anuncio · Tiquete" },
+    "m-cintas.dc.html": { "x": 4000, "y": 6000, "w": 1920, "h": 1080, "title": "Anuncio · Cintas" }
+  },
+  "order": [
+    "Main.dc.html",
+    "a-curso.dc.html",
+    "a-resumen.dc.html",
+    "b-calendario.dc.html",
+    "b-curso.dc.html",
+    "b-resumen.dc.html",
+    "c-calendario.dc.html",
+    "c-curso.dc.html",
+    "c-resumen.dc.html",
+    "d-etiquetas.dc.html",
+    "d-tablero.dc.html",
+    "d-recibo.dc.html",
+    "m-globo.dc.html",
+    "m-tiquete.dc.html",
+    "m-cintas.dc.html"
+  ],
+  "notes": {
+    "dir-a": { "x": 0, "y": -300, "text": "A · Póster: amarillo a sangre, tinta y números gigantes", "kind": "title1", "maxW": 5920 },
+    "dir-b": { "x": 0, "y": 1200, "text": "B · Tablero: fichas que giran y pase de abordar", "kind": "title1", "maxW": 5920 },
+    "dir-c": { "x": 0, "y": 2700, "text": "C · Sticker: collage en el lenguaje de las miniaturas", "kind": "title1", "maxW": 5920 },
+    "dropoff": { "x": 0, "y": 4200, "text": "Dropoff de precio: todos los cursos con el descuento (30 % es un ejemplo)", "kind": "title1", "maxW": 5920 },
+    "anuncio": { "x": 0, "y": 5700, "text": "Anuncio libre: el mensaje que escribes desde tu app de control", "kind": "title1", "maxW": 5920 }
+  },
+  "designSystems": []
+}

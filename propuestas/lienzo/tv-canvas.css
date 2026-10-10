@@ -1,0 +1,32 @@
+/* Base común de las mesas de trabajo de TV 0800 */
+:root { --disp: 'Creato Display Black', 'Helvetica Neue', Arial, sans-serif; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+img, svg { display: block; }
+
+.a, .b, .c { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+.d { font-family: var(--disp); font-weight: 900; letter-spacing: -0.03em; line-height: 0.88; }
+
+/* Orden de entrada (sin estilos en línea) */
+.a .panel li:nth-child(1), .a .filas li:nth-child(1) { --i: 0; }
+.a .panel li:nth-child(2), .a .filas li:nth-child(2) { --i: 1; }
+.a .panel li:nth-child(3), .a .filas li:nth-child(3) { --i: 2; }
+.a .asientos i { --i: 10; }
+.a .asientos i:nth-child(-n + 10) { background: transparent; border: 3px solid #5a5a5a; }
+
+.fl i:nth-child(1) { --i: 0; } .fl i:nth-child(2) { --i: 1; } .fl i:nth-child(3) { --i: 2; } .fl i:nth-child(4) { --i: 3; }
+.fl i:nth-child(5) { --i: 4; } .fl i:nth-child(6) { --i: 5; } .fl i:nth-child(7) { --i: 6; } .fl i:nth-child(8) { --i: 7; }
+.fl i:nth-child(9) { --i: 8; } .fl i:nth-child(10) { --i: 9; } .fl i:nth-child(11) { --i: 10; } .fl i:nth-child(12) { --i: 11; }
+.fl i:nth-child(13) { --i: 12; } .fl i:nth-child(14) { --i: 13; } .fl i:nth-child(15) { --i: 14; } .fl i:nth-child(16) { --i: 15; }
+.fl i:nth-child(17) { --i: 16; } .fl i:nth-child(18) { --i: 17; } .fl i:nth-child(19) { --i: 18; } .fl i:nth-child(20) { --i: 19; }
+.b .reloj { --s: 60px; }
+.b .rows p:nth-child(1) { --r: 0; } .b .rows p:nth-child(2) { --r: 1; } .b .rows p:nth-child(3) { --r: 2; } .b .rows p:nth-child(4) { --r: 3; }
+.b .rows p:nth-child(5) { --r: 4; } .b .rows p:nth-child(6) { --r: 5; } .b .rows p:nth-child(7) { --r: 6; }
+
+.c .s1 { --r: -9deg; --i: 0; } .c .s2 { --r: 7deg; --i: 1; } .c .s3 { --r: -5deg; --i: 2; }
+.c .i1 { --r: 1.2deg; --i: 0; } .c .i2 { --r: -1.4deg; --i: 1; } .c .i3 { --r: 1deg; --i: 2; }
+.c .t1 { --r: -3deg; --dy: 18px; --i: 0; } .c .t2 { --r: 1.5deg; --dy: -10px; --i: 1; } .c .t3 { --r: -1.5deg; --dy: 14px; --i: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+}

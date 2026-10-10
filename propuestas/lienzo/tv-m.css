@@ -1,0 +1,41 @@
+/* ANUNCIO LIBRE — tres maquetas: globo (sobre .c), tiquete y cintas (sobre .b) */
+
+/* ---------- M1 · Globo ---------- */
+.c .m1-t { left: 340px; top: 44px; font-size: 84px; }
+.c .globo { position: absolute; left: 150px; top: 236px; width: 1500px; padding: 76px 84px 60px; border-width: 8px; border-radius: 44px; box-shadow: 20px 20px 0 var(--ink); --r: -2deg; transform: rotate(var(--r)); z-index: 2; animation: c-pega 0.6s 0.2s both; }
+.c .globo::after { content: ''; position: absolute; left: 180px; bottom: -58px; width: 100px; height: 100px; background: #fff; border-right: 8px solid var(--ink); border-bottom: 8px solid var(--ink); transform: rotate(45deg) skew(12deg, 12deg); z-index: -1; }
+.c .globo h1 { font-size: 170px; line-height: 0.9; text-wrap: balance; }
+.c .globo p { margin-top: 32px; font-size: 44px; font-weight: 700; color: var(--bo); }
+.c .m-star { position: absolute; right: 110px; bottom: 50px; width: 340px; height: 340px; z-index: 4; --r: 0deg; animation: c-pega 0.5s 0.8s both; }
+.c .m-star svg { width: 100%; height: 100%; animation: c-rueda 50s linear infinite; }
+.c .m-star p { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: rotate(-8deg); }
+.c .m-star b { font-size: 130px; line-height: 0.82; padding-top: 10px; }
+.c .m-star small { font-size: 28px; font-weight: 700; }
+
+/* ---------- M2 · Tiquete ---------- */
+.b .aviso-t { position: absolute; left: 120px; top: 190px; width: 1680px; height: 730px; background: #fff; color: var(--ink); border-radius: 30px; display: grid; grid-template-columns: 1fr 420px; transform: rotate(-1.2deg); animation: b-pase 0.8s cubic-bezier(0.2, 0.85, 0.25, 1) both; }
+.b .aviso-t::before, .b .aviso-t::after { content: ''; position: absolute; left: 1228px; width: 64px; height: 64px; border-radius: 50%; background: var(--bg); }
+.b .aviso-t::before { top: -32px; } .b .aviso-t::after { bottom: -32px; }
+.b .aviso-t .msg { padding: 70px; }
+.b .aviso-t small { display: block; font-size: 26px; font-weight: 700; margin-bottom: 20px; }
+.b .aviso-t h1 { font-size: 150px; line-height: 0.9; text-wrap: balance; }
+.b .aviso-t .msg p { margin-top: 36px; font-size: 40px; font-weight: 700; }
+.b .aviso-t .talon { border-left: 5px dashed var(--ink); padding: 70px 44px 50px; display: flex; flex-direction: column; }
+.b .aviso-t .talon .n { font-size: 210px; line-height: 0.8; letter-spacing: -0.05em; }
+.b .aviso-t .talon .mm { font-size: 60px; margin-top: 16px; }
+.b .aviso-t .talon .cod { margin-top: auto; }
+.b .aviso-t .talon code { display: block; margin-top: 12px; font: 700 22px 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.3em; }
+
+/* ---------- M3 · Cintas ---------- */
+.b .franja { position: absolute; left: -100px; width: 2120px; height: 96px; background: var(--y); color: var(--ink); overflow: hidden; display: flex; align-items: center; }
+.b .franja.f1 { top: 170px; transform: rotate(-4deg); }
+.b .franja.f2 { bottom: 120px; transform: rotate(3deg); }
+.b .franja div { white-space: nowrap; font-size: 52px; padding-top: 8px; animation: m-corre 40s linear infinite; }
+.b .franja.f2 div { animation-direction: reverse; }
+.b .grito { position: absolute; left: 110px; right: 110px; top: 372px; text-align: center; }
+.b .grito h1 { font-size: 156px; line-height: 0.9; text-wrap: balance; animation: m-entra 0.7s 0.2s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.b .grito p { margin-top: 38px; font-size: 46px; font-weight: 700; color: var(--y); animation: m-entra 0.6s 0.5s both; }
+.b .m3-logo { position: absolute; left: 64px; top: 36px; height: 50px; z-index: 2; }
+
+@keyframes m-corre { to { transform: translateX(-50%); } }
+@keyframes m-entra { from { transform: scale(0.8); opacity: 0; } to { transform: none; opacity: 1; } }
