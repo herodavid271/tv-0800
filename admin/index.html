@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#050505">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TV 0800">
+<title>Control TV 0800</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app" class="ph"></div>
+<script src="vendor/supabase.js"></script>
+<script type="module">
+import { SUPABASE_URL, SUPABASE_KEY } from '../js/config.js';
+import { createApi } from './js/api.js';
+import { start } from './js/app.js';
+start(createApi({ url: SUPABASE_URL, key: SUPABASE_KEY }), document.getElementById('app'));
+</script>
+</body>
+</html>
