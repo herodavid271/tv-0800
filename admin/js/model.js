@@ -10,7 +10,7 @@ const pinned = (live) => (live?.state?.mode === 'pin' ? live.state.pin_screen : 
 
 // Botones principales de la pantalla de inicio.
 export const MAIN_BUTTONS = [
-  { id: 'breaks', label: 'Secuencia de breaks', sub: 'Portada de cursos y calendario' },
+  { id: 'breaks', label: 'Secuencia de breaks', sub: 'Portada, calendario y tiquetes' },
   { id: 'competencia', label: 'Competencia en vivo', sub: 'Leaderboard' },
   { id: 'cierre:portada', label: 'Secuencia de cierre', sub: 'Portada, drop 10 %, 30 % y Cashea' },
 ];

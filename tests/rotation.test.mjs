@@ -149,11 +149,17 @@ test('buildScreens: sin cursos próximos pero con jugadores sale solo la compete
   assert.deepEqual(buildScreens([], withAnn, '2026-10-10', liveWith(1)).map((x) => x.type), ['anuncio', 'competencia']);
 });
 
-test('buildScreens: secuencia de breaks = portada de tiquetes y calendario; sin tiquetes de curso, anuncio, competencia ni dropoff', () => {
+test('buildScreens: secuencia de breaks = portada papel, calendario y portada de tiquetes; sin tiquetes de curso, anuncio, competencia ni dropoff', () => {
   const cs = [priced('b', '2026-10-16'), priced('c', '2026-10-22')];
   const cfg = dcfg({ announcement_title: 'Hola' });
   const s = buildScreens(cs, cfg, '2026-10-10', { players: [{ id: 'x' }] }, { breaks: true });
-  assert.deepEqual(s.map((x) => x.type), ['portada', 'calendario']);
-  assert.equal(s[0].variant, 'tiquetes');
+  assert.deepEqual(s.map((x) => x.type), ['portada', 'calendario', 'portada']);
+  assert.deepEqual(s.filter((x) => x.type === 'portada').map((x) => x.variant), ['boletin', 'tiquetes']);
   assert.deepEqual(buildScreens([], cfg, '2026-10-10', null, { breaks: true }), [{ type: 'vacio' }]);
+});
+
+test('findScreenIndex: dos portadas distintas no se confunden', () => {
+  const list = [{ type: 'portada', variant: 'boletin' }, { type: 'calendario' }, { type: 'portada', variant: 'tiquetes' }];
+  assert.equal(findScreenIndex(list, 2, list), 2);
+  assert.equal(findScreenIndex(list, 0, list), 0);
 });

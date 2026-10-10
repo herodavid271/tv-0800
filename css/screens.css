@@ -282,6 +282,31 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
 .b.portada .bar span { font-size: 26px; font-weight: 800; color: #a3243b; margin-left: 16px; white-space: nowrap; }
 
 
+/* Portada boletín (breaks): lista en papel */
+.c.portada { background: #efefea; color: #0e0e0e; padding: 0 70px; box-sizing: border-box; }
+.c.portada .ph-top { display: flex; align-items: flex-end; justify-content: space-between; height: 160px; padding-bottom: 22px; border-bottom: 10px solid #0e0e0e; }
+.c.portada .ph-top h1 { margin: 0; font-size: 96px; }
+.c.portada .ph-top .ed { text-align: right; margin-right: 28px; }
+.c.portada .ph-top .ed p { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: 0.12em; }
+.c.portada .ph-top .ed b { display: inline-block; margin-top: 4px; font-size: 40px; background: #ffe200; padding: 8px 14px 2px; }
+.c.portada .ph-top img { height: 56px; margin-bottom: 8px; }
+.c.portada .filas { margin-top: 10px; }
+.c.portada .fila { display: grid; grid-template-columns: 170px 272px minmax(0, 1fr) 240px; column-gap: 34px; align-items: center; height: 124px; border-top: 4px solid #0e0e0e; }
+.c.portada .fila:first-child { border-top: 0; }
+.c.portada .dia { display: flex; align-items: baseline; }
+.c.portada .dia b { font-size: 100px; letter-spacing: -0.05em; line-height: 0.8; padding-top: 12px; }
+.c.portada .dia span { margin-left: 10px; font-size: 22px; font-weight: 800; letter-spacing: 0.08em; }
+.c.portada .pic { position: relative; width: 272px; height: 110px; border: 3px solid #0e0e0e; overflow: hidden; background: #0e0e0e; }
+.c.portada .pic img { display: block; width: 100%; height: 110px; object-fit: cover; }
+.c.portada .pic .fb { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; padding: 10px; font-size: 26px; text-align: center; background: #0e0e0e; color: #ffe200; }
+.c.portada .pic.nothumb img { display: none; }
+.c.portada .pic.nothumb .fb { display: flex; }
+.c.portada .nom { min-width: 0; }
+.c.portada .nom b { display: block; font-size: 50px; letter-spacing: -0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1; padding-top: 6px; }
+.c.portada .nom small { display: block; margin-top: 6px; font-size: 22px; color: #5c5c58; }
+.c.portada .pre { font-size: 46px; text-align: right; color: #a3243b; padding-top: 6px; }
+.c.portada .pie-p { position: absolute; left: 70px; right: 70px; bottom: 30px; border-top: 4px solid #0e0e0e; padding-top: 14px; font-size: 22px; font-weight: 700; }
+
 /* Portada tiquetes (breaks): un tiquete grande y cuatro chicos sobre negro */
 .b.portada.tiquetes { padding: 0; }
 .b.tiquetes .ph-top { position: absolute; left: 60px; right: 60px; top: 0; height: 140px; align-items: center; }

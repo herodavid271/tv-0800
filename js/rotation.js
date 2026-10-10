@@ -8,7 +8,9 @@ export function daysUntil(startISO, todayISO) {
 }
 
 const sameScreen = (a, b) =>
-  a.type === b.type && (a.type !== 'curso' || a.course?.slug === b.course?.slug);
+  a.type === b.type &&
+  (a.type !== 'curso' || a.course?.slug === b.course?.slug) &&
+  (a.type !== 'portada' || a.variant === b.variant);
 
 // Indice de la pantalla equivalente en la lista nueva; si no existe, el ultimo
 // (el siguiente next() vuelve a la pantalla 0).
@@ -36,8 +38,10 @@ export function buildScreens(courses, config, todayISO, live, { breaks = false }
   const ordered = [...soon, ...later];
 
   if (breaks) {
-    // Secuencia de breaks: portada de cursos y calendario (sin tiquetes de curso individuales).
-    return upcoming.length > 0 ? [{ type: 'portada', variant: 'tiquetes' }, { type: 'calendario' }] : [{ type: 'vacio' }];
+    // Secuencia de breaks: portada en papel, calendario y portada de tiquetes (sin tiquetes de curso individuales).
+    return upcoming.length > 0
+      ? [{ type: 'portada', variant: 'boletin' }, { type: 'calendario' }, { type: 'portada', variant: 'tiquetes' }]
+      : [{ type: 'vacio' }];
   }
 
   const screens = [];

@@ -264,6 +264,12 @@ test('portadaScreen: cartelera y tiquetes, solo cursos vigentes, días en mayús
   assert.equal((car.match(/class="tile"/g) || []).length, 2);
   assert.ok(car.indexOf('Beta') < car.indexOf('Alfa'));
   assert.ok(!car.includes('Vieja'));
+  const bol = portadaScreen(cs, 'boletin', TODAY);
+  assert.ok(bol.includes('portada boletin'));
+  assert.ok(bol.includes('logo-badge-negro.png'));
+  assert.equal(count(bol, /class="fila"/g), 2);
+  assert.match(bol, /<b class="d">15<\/b><span>JUE<\/span>/);
+  assert.doesNotMatch(bol, /cupos/i);
   const tq = portadaScreen(cs, 'tiquetes', TODAY);
   assert.ok(tq.includes('portada tiquetes'));
   assert.ok(tq.includes('logo-badge-blanco.png'));
