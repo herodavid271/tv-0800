@@ -170,3 +170,26 @@ test('liveSignature: estable con distinto serverTime, cambia con lo visible', ()
   const stale = normalizeLive(raw({}, [P('a', 5, '2026-10-10T18:00:05+00:00', 'A'), ps[1]], '2026-10-10T18:00:20+00:00'));
   assert.notEqual(liveSignature(fresh, [], TODAY), liveSignature(stale, [], TODAY));
 });
+
+test('resolveScreen: secuencia de cierre 10 y 30 % muestran el dropoff fijo', () => {
+  const cs = [course('a', '2026-10-15')];
+  for (const p of [10, 30]) {
+    const r = resolveScreen(normalizeLive(raw({ mode: 'pin', pin_screen: `cierre:${p}` })), cs, cfg(), TODAY);
+    assert.deepEqual(r, { screen: { type: 'dropoff', percent: p }, locked: true, key: `pin:cierre:${p}` });
+  }
+});
+
+test('resolveScreen: cierre Cashea usa 30 % de descuento y 40 % de inicial; sin precios no fija nada', () => {
+  const cs = [course('a', '2026-10-15')];
+  const r = resolveScreen(normalizeLive(raw({ mode: 'pin', pin_screen: 'cierre:cashea' })), cs, cfg(), TODAY);
+  assert.deepEqual(r.screen, { type: 'cashea', percent: 30, initial: 40 });
+  assert.equal(resolveScreen(normalizeLive(raw({ mode: 'pin', pin_screen: 'cierre:cashea' })), [course('a', '2026-10-15', { basePrice: null })], cfg(), TODAY), null);
+});
+
+test('isBreaks y resolveScreen: breaks no fija pantalla', async () => {
+  const { isBreaks } = await import('../js/live.js');
+  const live = normalizeLive(raw({ mode: 'pin', pin_screen: 'breaks' }));
+  assert.equal(isBreaks(live), true);
+  assert.equal(isBreaks(normalizeLive(raw())), false);
+  assert.equal(resolveScreen(live, [course('a', '2026-10-15')], cfg(), TODAY), null);
+});

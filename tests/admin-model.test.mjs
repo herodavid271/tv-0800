@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DROP_PERCENTS, DEFAULT_DROP, screenButtons, describeNow, dropPreview, playerRows } from '../admin/js/model.js';
+import {
+  screenButtons, describeNow, playerRows, mainButtons, cierreIndex, CIERRE_STEPS, genderOf, funnyEmoji, withEmoji, NAME_MAX,
+} from '../admin/js/model.js';
 import { createApi, MSG_FORBIDDEN, MSG_OFFLINE } from '../admin/js/api.js';
 import { normalizeLive } from '../js/live.js';
 
@@ -19,47 +21,55 @@ const live = (state = {}, players = []) => normalizeLive({
   players,
 });
 
-test('valores por defecto del DROP', () => {
-  assert.deepEqual(DROP_PERCENTS, [10, 20, 30, 40, 50]);
-  assert.equal(DEFAULT_DROP, 30);
-});
-
-test('screenButtons: calendario, un curso próximo cada uno y competencia', () => {
+test('screenButtons: calendario y un curso próximo cada uno (sin competencia)', () => {
   const b = screenButtons(COURSES, live());
-  assert.deepEqual(b.map((x) => x.id), ['calendario', 'curso:a', 'curso:b', 'curso:c', 'competencia']);
+  assert.deepEqual(b.map((x) => x.id), ['calendario', 'curso:a', 'curso:b', 'curso:c']);
   assert.equal(b[1].label, 'Delega con IA');
   assert.equal(b[1].sub, '15 oct');
-  assert.equal(b[4].sub, 'En vivo');
   assert.ok(b.every((x) => x.active === false));
+  assert.deepEqual(screenButtons(COURSES, live({ mode: 'pin', pin_screen: 'curso:b' })).filter((x) => x.active).map((x) => x.id), ['curso:b']);
 });
 
-test('screenButtons: activo según lo fijado', () => {
-  const b = screenButtons(COURSES, live({ mode: 'pin', pin_screen: 'curso:b' }));
-  assert.deepEqual(b.filter((x) => x.active).map((x) => x.id), ['curso:b']);
-  assert.equal(screenButtons(COURSES, live({ mode: 'pin', pin_screen: 'competencia' })).at(-1).active, true);
+test('mainButtons: breaks, competencia en vivo y secuencia de cierre', () => {
+  const ids = (l) => mainButtons(l).filter((x) => x.active).map((x) => x.label);
+  assert.deepEqual(mainButtons(live()).map((x) => x.label), ['Secuencia de breaks', 'Competencia en vivo', 'Secuencia de cierre']);
+  assert.deepEqual(ids(live()), []);
+  assert.deepEqual(ids(live({ mode: 'pin', pin_screen: 'breaks' })), ['Secuencia de breaks']);
+  assert.deepEqual(ids(live({ mode: 'pin', pin_screen: 'competencia' })), ['Competencia en vivo']);
+  for (const p of ['cierre:10', 'cierre:30', 'cierre:cashea']) assert.deepEqual(ids(live({ mode: 'pin', pin_screen: p })), ['Secuencia de cierre']);
 });
 
-test('describeNow: automático, fijos y DROP', () => {
+test('cierreIndex: 10 %, 30 % y Cashea en orden', () => {
+  assert.deepEqual(CIERRE_STEPS.map((x) => x.id), ['cierre:10', 'cierre:30', 'cierre:cashea']);
+  assert.equal(cierreIndex(live()), -1);
+  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'cierre:10' })), 0);
+  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'cierre:cashea' })), 2);
+  assert.equal(cierreIndex(live({ mode: 'pin', pin_screen: 'calendario' })), -1);
+});
+
+test('describeNow: automático, breaks, competencia, cierre y cursos', () => {
   assert.equal(describeNow(live(), COURSES), 'Automático');
-  assert.equal(describeNow(live({ mode: 'pin', pin_screen: 'calendario' }), COURSES), 'Calendario (fijo)');
-  assert.equal(describeNow(live({ mode: 'pin', pin_screen: 'competencia' }), COURSES), 'Competencia (fijo)');
+  assert.equal(describeNow(live({ mode: 'pin', pin_screen: 'breaks' }), COURSES), 'Secuencia de breaks');
+  assert.equal(describeNow(live({ mode: 'pin', pin_screen: 'competencia' }), COURSES), 'Competencia en vivo');
+  assert.equal(describeNow(live({ mode: 'pin', pin_screen: 'cierre:30' }), COURSES), 'Cierre: Drop −30 %');
+  assert.equal(describeNow(live({ mode: 'pin', pin_screen: 'cierre:cashea' }), COURSES), 'Cierre: Inicial 40 % con Cashea');
   assert.equal(describeNow(live({ mode: 'pin', pin_screen: 'curso:a' }), COURSES), 'Delega con IA (fijo)');
-  assert.equal(describeNow(live({ drop_active: true, drop_percent: 30 }), COURSES), 'DROP −30 % activo');
 });
 
-test('dropPreview: 2 líneas y "n más"', () => {
-  const p = dropPreview(COURSES, 30);
-  assert.equal(p.lines.length, 2);
-  assert.deepEqual(p.lines[0], { name: 'Delega con IA', before: '$99.99', after: '$69.99' });
-  assert.equal(p.lines[1].after, '$275.79');
-  assert.equal(p.more, 1);
+test('genderOf: nombres en español', () => {
+  for (const n of ['Ana', 'María José', 'Valentina', 'Carmen', 'Isabel', 'Raquel', 'Inés', 'Belén', 'Ruth']) assert.equal(genderOf(n), 'f', n);
+  for (const n of ['Carlos', 'Luis', 'David', 'Juan', 'Miguel', 'Pedro', 'Luca', 'Joshua', 'Borja', 'Andrés']) assert.equal(genderOf(n), 'm', n);
+  for (const n of ['', 'x', 'Dani', 'Jaime']) assert.equal(genderOf(n), 'x', n);
 });
 
-test('dropPreview: sin precios o con uno solo', () => {
-  assert.deepEqual(dropPreview([course('x', 'X', '2026-10-15', { basePrice: null })], 30), { lines: [], more: 0 });
-  const one = dropPreview([COURSES[0]], 10);
-  assert.equal(one.lines.length, 1);
-  assert.equal(one.more, 0);
+test('funnyEmoji: pools por género y emoji de un solo carácter', () => {
+  const lo = () => 0; const hi = () => 0.999999;
+  assert.notEqual(funnyEmoji('Ana', lo), funnyEmoji('Carlos', lo));
+  for (const n of ['Ana', 'Carlos', 'Jaime']) {
+    for (const r of [lo, hi]) assert.equal([...funnyEmoji(n, r)].length, 1);
+  }
+  assert.equal(withEmoji('Ana', lo), `${funnyEmoji('Ana', lo)} Ana`);
+  assert.ok(NAME_MAX + 2 <= 24);
 });
 
 test('playerRows: posición, nombre y puntos en orden', () => {
@@ -113,8 +123,6 @@ test('api: las escrituras llevan el token y las lecturas no', async () => {
   const { lib, calls } = fakeLib({ rpcResult: null });
   const api = mk(lib);
   await api.pin('calendario');
-  await api.drop(30);
-  await api.dropOff();
   await api.addPlayer('Ana');
   await api.removePlayer('id1');
   await api.score('id1');
@@ -125,7 +133,7 @@ test('api: las escrituras llevan el token y las lecturas no', async () => {
   await api.editions();
   const t = { p_token: TOKEN };
   assert.deepEqual(calls, [
-    ['tv_pin', { ...t, p_screen: 'calendario' }], ['tv_drop', { ...t, p_percent: 30 }], ['tv_drop_off', t],
+    ['tv_pin', { ...t, p_screen: 'calendario' }],
     ['tv_player_add', { ...t, p_name: 'Ana' }], ['tv_player_remove', { ...t, p_id: 'id1' }], ['tv_score', { ...t, p_id: 'id1' }],
     ['tv_undo', t], ['tv_competition_reset', t], ['tv_auto', t], ['tv_live', {}], ['tv_ediciones', {}],
   ]);

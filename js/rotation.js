@@ -28,12 +28,17 @@ export function seatState(course) {
   return 'ok';
 }
 
-export function buildScreens(courses, config, todayISO, live) {
+export function buildScreens(courses, config, todayISO, live, { breaks = false } = {}) {
   const visible = courses.filter((c) => !config.hidden_courses.includes(c.slug));
   const upcoming = visible.filter((c) => !c.finished);
   const soon = upcoming.filter((c) => daysUntil(c.startDate, todayISO) <= 1);
   const later = upcoming.filter((c) => daysUntil(c.startDate, todayISO) > 1);
   const ordered = [...soon, ...later];
+
+  if (breaks) {
+    const rot = upcoming.length > 0 ? [{ type: 'calendario' }, ...ordered.map((course) => ({ type: 'curso', course }))] : [];
+    return rot.length ? rot : [{ type: 'vacio' }];
+  }
 
   const screens = [];
   if (config.announcement_title) screens.push({ type: 'anuncio' });

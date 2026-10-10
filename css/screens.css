@@ -225,3 +225,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; }
   *, *::before, *::after { animation: none !important; }
   #progress i { animation: fill var(--dur, 12s) linear forwards !important; }
 }
+
+/* Cashea: la columna del medio es el precio de hoy (sin tachar) */
+.b.cashea .recibo li s { text-decoration: none; color: #5c5c58; }

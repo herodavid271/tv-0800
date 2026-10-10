@@ -2,8 +2,8 @@ import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { createClient, loadSnapshot, pickCourses, normalizeConfig } from './data.js';
 import { buildScreens, findScreenIndex } from './rotation.js';
 import { localISO } from './dates.js';
-import { calendarScreen, courseScreen, dropoffScreen, announcementScreen, emptyScreen, leaderboardScreen, clockText } from './render.js';
-import { DEFAULT_LIVE, normalizeLive, resolveScreen, buildLeaderboard, liveSignature } from './live.js';
+import { calendarScreen, courseScreen, dropoffScreen, casheaScreen, announcementScreen, emptyScreen, leaderboardScreen, clockText } from './render.js';
+import { DEFAULT_LIVE, normalizeLive, resolveScreen, buildLeaderboard, liveSignature, isBreaks } from './live.js';
 
 const REFRESH_MS = 5 * 60 * 1000;
 const RETRY_MS = 15 * 1000;
@@ -20,7 +20,7 @@ const storage = (() => {
 })();
 
 const state = { courses: [], config: normalizeConfig(null), online: true, loaded: false, screens: [], index: 0,
-  live: DEFAULT_LIVE, locked: null, resume: null, lastSig: null };
+  live: DEFAULT_LIVE, breaks: false, locked: null, resume: null, lastSig: null };
 let timer = null;
 let firstLoad = true;
 
@@ -47,7 +47,7 @@ function rebuild() {
   const prev = state.screens;
   const prevIndex = state.index;
   state.screens = state.loaded
-    ? buildScreens(state.courses, state.config, localISO(), state.live)
+    ? buildScreens(state.courses, state.config, localISO(), state.live, { breaks: state.breaks })
     : [{ type: 'conectando' }];
   const placeholder = (list) => list.length <= 1 && ['conectando', 'vacio'].includes(list[0]?.type);
   if (firstLoad || placeholder(prev) || state.screens.length <= 1) state.index = 0;
@@ -61,6 +61,7 @@ function html(screen) {
     case 'calendario': return calendarScreen(visibleCourses(), today);
     case 'curso': return courseScreen(screen.course, today, { message: state.config.message });
     case 'dropoff': return dropoffScreen(visibleCourses(), screen.percent, today);
+    case 'cashea': return casheaScreen(visibleCourses(), screen.percent, screen.initial, today);
     case 'competencia': return leaderboardScreen(buildLeaderboard(state.live, visibleCourses(), today));
     case 'conectando': return emptyScreen('Conectando…');
     default: return emptyScreen('Próximamente');
@@ -159,6 +160,8 @@ async function liveTick() {
   }
   const hadPlayers = state.live.players.length > 0;
   state.live = normalizeLive(raw);
+  const breaksChanged = isBreaks(state.live) !== state.breaks;
+  state.breaks = isBreaks(state.live);
   if (!state.loaded) return; // sin cursos cargados no se fija ni se pinta nada
   const today = localISO();
   const res = resolveScreen(state.live, visibleCourses(), state.config, today);
@@ -185,6 +188,12 @@ async function liveTick() {
   }
 
   if (!state.loaded || firstLoad) return;
+  if (breaksChanged) {
+    rebuild();
+    state.index = Math.min(state.index, state.screens.length - 1);
+    show();
+    return;
+  }
   if (hadPlayers !== (state.live.players.length > 0)) {
     const before = state.screens;
     rebuild();

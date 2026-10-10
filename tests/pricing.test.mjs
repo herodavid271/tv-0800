@@ -40,3 +40,10 @@ test('applyDiscount coincide con aritmetica entera half-up (barrido)', () => {
     }
   }
 });
+
+test('buildCasheaRows: inicial 40 % sobre el precio ya descontado al 30 %', async () => {
+  const { buildCasheaRows } = await import('../js/pricing.js');
+  const [r] = buildCasheaRows([{ slug: 'a', name: 'A', basePrice: 99.99 }], 30, 40);
+  assert.equal(r.after, 69.99);
+  assert.equal(r.initial, 28);
+});

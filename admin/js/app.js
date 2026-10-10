@@ -1,22 +1,21 @@
 import { pickCourses } from '../../js/data.js';
 import { DEFAULT_LIVE, RECENT_MS } from '../../js/live.js';
 import { localISO } from '../../js/dates.js';
-import { DROP_PERCENTS, DEFAULT_DROP, screenButtons, describeNow, dropPreview, playerRows } from './model.js';
+import { CIERRE_STEPS, NAME_MAX, mainButtons, cierreIndex, screenButtons, describeNow, playerRows, withEmoji } from './model.js';
 
 const LIVE_MS = 2000;
 const EDITIONS_MS = 60000;
 const CONFIRM_MS = 3000;
 const GENERIC_ERROR = 'No se pudo, reintenta';
-const DROP_KEY = 'tv0800.admin.drop';
 const LOGO = '../assets/logo-0800-blanco.png';
 
 const ICONS = {
   pantalla: '<rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path>',
-  drop: '<path d="M20 12l-8 8-9-9V4h7z"></path><circle cx="7.5" cy="8.5" r="1.2"></circle>',
+  cierre: '<path d="M20 12l-8 8-9-9V4h7z"></path><circle cx="7.5" cy="8.5" r="1.2"></circle>',
   competencia: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"></path><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"></path>',
   auto: '<path d="M20 12a8 8 0 1 1-2.5-5.8"></path><path d="M20 4v5h-5"></path>',
 };
-const TABS = [['pantalla', 'Pantalla'], ['drop', 'DROP'], ['competencia', 'Competencia']];
+const TABS = [['pantalla', 'Pantalla'], ['cierre', 'Cierre'], ['competencia', 'Competencia']];
 
 function el(tag, cls, text) {
   const n = document.createElement(tag);
@@ -32,22 +31,10 @@ function icon(name) {
   s.innerHTML = ICONS[name]; // constante propia, nunca datos
   return s;
 }
-function readPct() {
-  try {
-    const v = Number(localStorage.getItem(DROP_KEY));
-    return DROP_PERCENTS.includes(v) ? v : DEFAULT_DROP;
-  } catch { return DEFAULT_DROP; }
-}
-function savePct(v) {
-  try { localStorage.setItem(DROP_KEY, String(v)); } catch { /* sin almacenamiento */ }
-}
-
-const DEFAULT_EMAIL = 'hola@davidsantana.net';
-
 export function start(api, root) {
   const S = {
     session: null, view: 'pantalla', live: DEFAULT_LIVE, courses: [], online: true,
-    pct: readPct(), pending: new Set(), mutTok: 0, armedReset: false, resetTimer: null, toastTimer: null,
+    pending: new Set(), mutTok: 0, armedReset: false, resetTimer: null, toastTimer: null,
     scoreSeq: 0, scoring: {}, repoll: false, lastSig: null,
     started: false, loginMsg: '', email: '', draftName: '',
   };
@@ -100,8 +87,12 @@ export function start(api, root) {
   const actions = {
     pin: async (id) => { await run('pin', async () => { setState({ mode: 'pin', pin_screen: id }); renderLive(); await api.pin(id); }); pollLive(true); },
     auto: async () => { await run('pin', async () => { setState({ mode: 'auto', pin_screen: null }); renderLive(); await api.auto(); }); pollLive(true); },
-    drop: async () => { await run('drop', async () => { setState({ drop_active: true, drop_percent: S.pct }); renderLive(); await api.drop(S.pct); }); pollLive(true); },
-    dropOff: async () => { await run('drop', async () => { setState({ drop_active: false, drop_percent: 0 }); renderLive(); await api.dropOff(); }); pollLive(true); },
+    // Siguiente paso de la secuencia de cierre: 10 % → 30 % → inicial Cashea.
+    async cierreNext() {
+      const i = cierreIndex(S.live);
+      const step = CIERRE_STEPS[Math.min(i + 1, CIERRE_STEPS.length - 1)];
+      await actions.pin(step.id);
+    },
     async score(p) {
       S.scoreSeq += 1;
       S.scoring[p.id] = (S.scoring[p.id] || 0) + 1;
@@ -118,14 +109,15 @@ export function start(api, root) {
       pollLive(true);
     },
     async add(input) {
-      const name = input.value.trim().slice(0, 24);
-      if (!name) return;
+      const clean = input.value.trim().slice(0, NAME_MAX);
+      if (!clean) return;
+      const name = withEmoji(clean); // emoji al azar según el nombre; el servidor le pone el primer punto
       // El campo se limpia al instante para poder escribir el siguiente nombre sin esperar a la red;
       // si el guardado falla, el nombre vuelve al campo (solo si sigue vacío).
       input.value = ''; S.draftName = '';
       S.addSeq = (S.addSeq || 0) + 1;
       const r = await run(`add:${S.addSeq}`, () => api.addPlayer(name));
-      if (!r && !input.value) { input.value = name; S.draftName = name; }
+      if (!r && !input.value) { input.value = clean; S.draftName = clean; }
       pollLive(true);
     },
     async reset() {
@@ -181,7 +173,7 @@ export function start(api, root) {
     S.lastSig = null;
     root.appendChild(header());
     if (S.view === 'pantalla') buildPantalla();
-    else if (S.view === 'drop') buildDrop();
+    else if (S.view === 'cierre') buildCierre();
     else buildCompetencia();
     root.appendChild(tabs());
     window.scrollTo(0, 0);
@@ -196,6 +188,7 @@ export function start(api, root) {
     dyn.ahoraTag = el('span');
     fila.append(dyn.ahoraTxt, dyn.ahoraTag);
     ahora.append(el('small', null, 'Ahora en el TV'), fila);
+    dyn.main = el('div', 'principales');
     dyn.rejilla = el('div', 'rejilla');
     dyn.auto = el('button', 'auto');
     dyn.auto.type = 'button';
@@ -207,31 +200,29 @@ export function start(api, root) {
       try { await api.signOut(); } catch { /* ignora */ }
       S.session = null; S.loginMsg = ''; showLogin();
     });
-    root.append(h, ahora, dyn.rejilla, dyn.auto, salir);
+    root.append(h, ahora, dyn.main, el('h2', 'sec-t', 'Otras pantallas'), dyn.rejilla, dyn.auto, salir);
   }
 
-  function buildDrop() {
-    root.append(el('h1', 'd', 'DROP de precio'), el('p', 'sub', 'Elige el descuento y pulsa el botón. El TV muestra los precios cayendo.'));
-    const chips = el('div', 'chips');
-    dyn.chips = {};
-    for (const p of DROP_PERCENTS) {
-      const c = el('button', 'chip', `${p}%`);
-      c.type = 'button';
-      c.addEventListener('click', () => { S.pct = p; savePct(p); renderLive(); });
-      chips.appendChild(c);
-      dyn.chips[p] = c;
-    }
-    dyn.drop = el('button', 'drop');
-    dyn.drop.type = 'button';
-    dyn.dropBig = el('b', 'd', 'DROP');
-    dyn.dropSmall = el('small');
-    dyn.drop.append(dyn.dropBig, dyn.dropSmall);
-    dyn.drop.addEventListener('click', () => actions.drop());
-    dyn.vista = el('div', 'vista');
-    dyn.off = el('button', 'sec', 'Quitar descuento del TV');
-    dyn.off.type = 'button';
-    dyn.off.addEventListener('click', () => actions.dropOff());
-    root.append(chips, dyn.drop, dyn.vista, dyn.off);
+  function buildCierre() {
+    root.append(el('h1', 'd', 'Secuencia de cierre'), el('p', 'sub', 'Empieza con el drop de 10 %. Con cada toque en Siguiente el TV sube al próximo paso.'));
+    dyn.pasos = el('div', 'pasos');
+    dyn.paso = [];
+    CIERRE_STEPS.forEach((st, i) => {
+      const b = el('button', 'paso');
+      b.type = 'button';
+      b.append(el('span', 'num d', String(i + 1)), el('span', 'txt'));
+      b.lastChild.append(el('b', null, st.label), el('small', null, st.sub));
+      b.addEventListener('click', () => actions.pin(st.id));
+      dyn.pasos.appendChild(b);
+      dyn.paso.push(b);
+    });
+    dyn.next = el('button', 'siguiente');
+    dyn.next.type = 'button';
+    dyn.next.addEventListener('click', () => actions.cierreNext());
+    dyn.fin = el('button', 'sec', 'Terminar secuencia');
+    dyn.fin.type = 'button';
+    dyn.fin.addEventListener('click', () => actions.auto());
+    root.append(dyn.pasos, dyn.next, dyn.fin);
   }
 
   function buildCompetencia() {
@@ -239,7 +230,7 @@ export function start(api, root) {
     const form = el('form', 'nuevo');
     form.noValidate = true;
     const input = el('input');
-    input.type = 'text'; input.maxLength = 24; input.placeholder = 'Nombre del participante';
+    input.type = 'text'; input.maxLength = NAME_MAX; input.placeholder = 'Nombre del participante';
     input.setAttribute('autocomplete', 'off'); input.setAttribute('enterkeyhint', 'done'); input.setAttribute('aria-label', 'Nombre del participante');
     input.value = S.draftName;
     input.addEventListener('input', () => { S.draftName = input.value; });
@@ -264,7 +255,7 @@ export function start(api, root) {
     if (!S.started || !dyn.estado) return;
     const nowMs = Date.parse(S.live.serverTime);
     const recentId = S.live.players.find((p) => !Number.isNaN(nowMs) && p.lastScoredAt && nowMs - Date.parse(p.lastScoredAt) < RECENT_MS)?.id ?? null;
-    const sig = JSON.stringify([S.view, { ...S.live, serverTime: null }, recentId, S.courses, [...S.pending], S.scoring, S.armedReset, S.pct, S.online]);
+    const sig = JSON.stringify([S.view, { ...S.live, serverTime: null }, recentId, S.courses, [...S.pending], S.scoring, S.armedReset, S.online]);
     if (sig === S.lastSig) return;
     S.lastSig = sig;
     dyn.estado.classList.toggle('off', !S.online);
@@ -273,10 +264,20 @@ export function start(api, root) {
 
     const st = S.live.state;
     if (S.view === 'pantalla') {
-      const dropOn = st.drop_active && st.drop_percent >= 1;
       dyn.ahoraTxt.textContent = describeNow(S.live, S.courses);
-      dyn.ahoraTag.textContent = dropOn ? 'DROP' : st.mode === 'pin' ? 'Fijo' : 'Auto';
-      dyn.ahoraTag.className = dropOn ? 'drop-tag' : '';
+      dyn.ahoraTag.textContent = st.mode === 'pin' ? 'Fijo' : 'Auto';
+      dyn.main.textContent = '';
+      for (const b of mainButtons(S.live)) {
+        const n = el('button', 'grande' + (b.active ? ' on' : ''));
+        n.type = 'button';
+        n.append(el('b', 'd', b.label), el('small', null, b.sub));
+        n.disabled = busy('pin');
+        n.addEventListener('click', async () => {
+          await actions.pin(b.id);
+          if (b.id === 'cierre:10') { S.view = 'cierre'; showApp(); }
+        });
+        dyn.main.appendChild(n);
+      }
       dyn.rejilla.textContent = '';
       for (const b of screenButtons(S.courses, S.live)) {
         const n = el('button', 'esc' + (b.active ? ' on' : ''));
@@ -287,28 +288,16 @@ export function start(api, root) {
         dyn.rejilla.appendChild(n);
       }
       dyn.auto.disabled = busy('pin') || st.mode !== 'pin';
-    } else if (S.view === 'drop') {
-      const on = st.drop_active && st.drop_percent >= 1;
-      const pct = on ? st.drop_percent : S.pct;
-      for (const [p, c] of Object.entries(dyn.chips)) { c.classList.toggle('on', Number(p) === S.pct); c.disabled = busy('drop'); }
-      dyn.drop.classList.toggle('activo', on);
-      dyn.drop.disabled = busy('drop');
-      dyn.dropSmall.textContent = on ? `−${st.drop_percent} % activo` : `−${S.pct} % en todos`;
-      dyn.off.disabled = busy('drop') || !on;
-      const prev = dropPreview(S.courses, pct);
-      dyn.vista.textContent = '';
-      dyn.vista.appendChild(el('b', null, 'Vista previa en el TV'));
-      if (!prev.lines.length) {
-        dyn.vista.append(document.createElement('br'), document.createTextNode('No hay cursos con precio'));
-      }
-      for (const l of prev.lines) {
-        dyn.vista.appendChild(document.createElement('br'));
-        dyn.vista.append(document.createTextNode(`${l.name}: ${l.before} → `), el('b', null, l.after));
-      }
-      if (prev.more > 0) {
-        dyn.vista.appendChild(document.createElement('br'));
-        dyn.vista.append(document.createTextNode(`y ${prev.more} ${prev.more === 1 ? 'curso más' : 'cursos más'}`));
-      }
+    } else if (S.view === 'cierre') {
+      const idx = cierreIndex(S.live);
+      dyn.paso.forEach((b, i) => {
+        b.classList.toggle('on', i === idx);
+        b.classList.toggle('hecho', idx >= 0 && i < idx);
+        b.disabled = busy('pin');
+      });
+      dyn.next.textContent = idx < 0 ? `Iniciar: ${CIERRE_STEPS[0].label}` : idx < CIERRE_STEPS.length - 1 ? `Siguiente: ${CIERRE_STEPS[idx + 1].label}` : 'Último paso en pantalla';
+      dyn.next.disabled = busy('pin') || idx === CIERRE_STEPS.length - 1;
+      dyn.fin.disabled = busy('pin') || idx < 0;
     } else {
       const rows = playerRows(S.live);
       const now = Date.parse(S.live.serverTime);

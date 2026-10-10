@@ -244,3 +244,13 @@ test('leaderboardScreen: nombre largo del líder baja de tamaño', () => {
   assert.match(leaderboardScreen(lbModel({ leader: { name: 'x'.repeat(11), points: 1 } })), /<b class="d m">/);
   assert.match(leaderboardScreen(lbModel({ leader: { name: 'x'.repeat(17), points: 1 } })), /<b class="d s">/);
 });
+
+test('casheaScreen: precio de hoy, inicial y 40 %', async () => {
+  const { casheaScreen } = await import('../js/render.js');
+  const h = casheaScreen([course()], 30, 40, TODAY);
+  assert.ok(h.includes('class="screen b dropoff cashea"'));
+  assert.ok(h.includes('$69.99'));
+  assert.ok(h.includes('$28.00'));
+  assert.ok(h.includes('40%'));
+  assert.ok(!h.includes('<s>$99.99'));
+});

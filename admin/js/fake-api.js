@@ -40,9 +40,7 @@ export function createFakeApi({ signedIn = true } = {}) {
     onAuth(cb) { listener = cb; return { data: { subscription: { unsubscribe() {} } } }; },
     async pin(screen) { need(); await wait(); st.mode = 'pin'; st.pin_screen = screen; },
     async auto() { need(); await wait(); st.mode = 'auto'; st.pin_screen = null; },
-    async drop(percent) { need(); await wait(); Object.assign(st, { drop_active: true, drop_percent: percent, drop_at: new Date().toISOString() }); },
-    async dropOff() { need(); await wait(); Object.assign(st, { drop_active: false, drop_percent: 0 }); },
-    async addPlayer(name) { need(); await wait(); players.push({ id: `p${seq++}`, name, points: 0, last_scored_at: null }); sync(); return `p${seq}`; },
+    async addPlayer(name) { need(); await wait(); players.push({ id: `p${seq}`, name, points: 1, last_scored_at: new Date().toISOString() }); history.push(`p${seq}`); sync(); return `p${seq++}`; },
     async removePlayer(id) { need(); await wait(); players = players.filter((p) => p.id !== id); },
     async score(id) {
       need(); await wait();

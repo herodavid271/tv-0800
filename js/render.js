@@ -1,7 +1,7 @@
 import { formatLong, parseISO, MESES } from './dates.js';
 import { daysUntil, seatState } from './rotation.js';
 import { monthToShow, buildMonthGrid } from './calendar.js';
-import { buildPriceRows, formatPrice } from './pricing.js';
+import { buildPriceRows, formatPrice, buildCasheaRows } from './pricing.js';
 
 export const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -158,6 +158,38 @@ ${barcode(40)}
 <b class="pct d">−${percent}%</b>
 <p class="d">en todos los cursos presenciales</p>
 <small>Precio especial de hoy, ${formatLong(todayISO)}</small>
+</div>
+</section>`;
+}
+
+// ---------- Reserva con Cashea (recibo: precio de hoy y la inicial que se paga para reservar) ----------
+export function casheaScreen(courses, percent, initialPercent, todayISO) {
+  const rows = buildCasheaRows(courses, percent, initialPercent).slice(0, 8);
+  const lis = rows
+    .map((r) => `<li><span>${esc(r.name)}</span><s>${formatPrice(r.after)}</s><b>${formatPrice(r.initial)}</b></li>`)
+    .join('');
+  const teeth = '<i></i>'.repeat(19);
+  return `<section class="screen b dropoff cashea">
+<img class="d3-logo" src="${LOGO_WHITE}" alt="0800">
+<div class="ranura"></div>
+<div class="recibo-w"><div class="recibo-m">
+<div class="recibo${rows.length > 6 ? ' ap' : ''}">
+<img class="lg" src="${LOGO_INK}" alt="0800">
+<h1 class="d">Reserva hoy</h1>
+<p class="sub">Precio de hoy e inicial con Cashea</p>
+<hr>
+<ul>${lis}</ul>
+<hr>
+<p class="tot"><span>Inicial para reservar</span><b class="d">${initialPercent}%</b></p>
+${barcode(40)}
+<code>${ticketCode(todayISO)}</code>
+</div>
+<div class="diente" aria-hidden="true">${teeth}</div>
+</div></div>
+<div class="caida">
+<b class="pct d">${initialPercent}%</b>
+<p class="d">de inicial con Cashea y reservas tu cupo</p>
+<small>${formatLong(todayISO)}</small>
 </div>
 </section>`;
 }

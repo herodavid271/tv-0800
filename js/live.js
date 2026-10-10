@@ -1,6 +1,11 @@
 import { buildPriceRows } from './pricing.js';
 
 export const RECENT_MS = 10000;
+export const CASHEA_DROP = 30;
+export const CASHEA_INITIAL = 40;
+
+// La secuencia de breaks no fija una pantalla: solo limita la rotación a calendario y cursos.
+export const isBreaks = (live) => live?.state?.mode === 'pin' && live.state.pin_screen === 'breaks';
 
 export const DEFAULT_LIVE = {
   state: { mode: 'auto', pin_screen: null, drop_active: false, drop_percent: 0, drop_at: null },
@@ -51,6 +56,13 @@ export function resolveScreen(live, courses, config, todayISO) {
 
   if (s.mode === 'pin' && s.pin_screen) {
     const pin = s.pin_screen;
+    const cierre = /^cierre:(10|30)$/.exec(pin);
+    if (cierre && buildPriceRows(visible, Number(cierre[1])).length > 0) {
+      return { screen: { type: 'dropoff', percent: Number(cierre[1]) }, locked: true, key: `pin:${pin}` };
+    }
+    if (pin === 'cierre:cashea' && buildPriceRows(visible, CASHEA_DROP).length > 0) {
+      return { screen: { type: 'cashea', percent: CASHEA_DROP, initial: CASHEA_INITIAL }, locked: true, key: `pin:${pin}` };
+    }
     if (pin === 'calendario' || pin === 'competencia') {
       return { screen: { type: pin }, locked: true, key: `pin:${pin}` };
     }

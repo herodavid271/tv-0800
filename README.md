@@ -43,11 +43,11 @@ App web para iPhone en `https://tv-0800.vercel.app/admin/`. Instalar: abrir en S
 
 - **Entrar:** correo (`hola@davidsantana.net`, ya escrito) y tu clave. Es independiente de las cuentas del Hub: solo ese correo entra. Tras 5 intentos fallidos el login se bloquea 1 min, luego 2, 4, 8… hasta 60 min, y cada intento fallido tarda 1 s. Un teléfono con sesión iniciada no se bloquea (la sesión dura 60 días, máximo 5 teléfonos).
 - **Cambiar la clave** (editor SQL de Supabase, cierra todas las sesiones): `select tv_admin_set_password('hola@davidsantana.net', 'tu clave nueva');` (mínimo 10 caracteres).
-- **Pantalla:** fija el calendario, un curso o la competencia en el TV; "Volver a automático" reanuda la rotación.
-- **DROP:** eliges 10/20/30/40/50 % y pulsas DROP; el TV muestra el recibo con los precios cayendo. "Quitar descuento" lo apaga y el TV vuelve a lo que estaba.
-- **Competencia:** agregas nombres, tocas +1 por respuesta correcta, deshaces, y "Nueva competencia" borra todo. El TV muestra el leaderboard en vivo.
+- **Pantalla:** tres botones grandes: **Secuencia de breaks** (el TV rota solo calendario y cursos), **Competencia en vivo** (leaderboard fijo) y **Secuencia de cierre**. Debajo, "Otras pantallas" fija el calendario o un curso; "Volver a automático" reanuda la rotación normal.
+- **Cierre:** pestaña Cierre, tres pasos: Drop −10 % → Drop −30 % → Inicial 40 % con Cashea (precio con 30 % y lo que se paga para reservar). El botón Siguiente avanza; se puede tocar un paso para saltar; "Terminar secuencia" vuelve a automático.
+- **Competencia:** al agregar a alguien entra con 1 punto y un emoji chistoso al azar según el nombre (heurística: hombre, mujer o neutro). +1 por respuesta correcta, deshacer, y "Nueva competencia" borra todo.
 
-El TV consulta `tv_live()` cada 2 segundos. Prioridad en el TV: DROP activo > pantalla fija > rotación automática.
+El TV consulta `tv_live()` cada 2 segundos. Prioridad en el TV: pantalla fija (cierre, competencia, calendario o curso) > rotación automática (breaks limita la rotación a calendario y cursos).
 
 ## Miniaturas y logo
 
@@ -56,7 +56,7 @@ El TV consulta `tv_live()` cada 2 segundos. Prioridad en el TV: DROP activo > pa
 
 ## Datos
 
-- `sql/001` a `005`: función `tv_ediciones()` (solo lectura para `anon`: curso, fechas, ciudad, lugar, cupos y precio base) y tabla `tv_config`.
+- `sql/001` a `006`: función `tv_ediciones()` (solo lectura para `anon`: curso, fechas, ciudad, lugar, cupos y precio base) y tabla `tv_config`.
 - Los precios finales se calculan en el TV: `round(precio_base × (100 − %))` en centavos.
 
 ## Desarrollo

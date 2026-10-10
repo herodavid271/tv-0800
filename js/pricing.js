@@ -17,3 +17,8 @@ export function buildPriceRows(courses, percent) {
       return { slug: c.slug, name: c.name, before, after, saving: (Math.round(before * 100) - Math.round(after * 100)) / 100 };
     });
 }
+
+// Cashea: precio con el descuento y la inicial (porcentaje del precio ya descontado) que se paga para reservar.
+export function buildCasheaRows(courses, percent, initialPercent) {
+  return buildPriceRows(courses, percent).map((r) => ({ ...r, initial: applyDiscount(r.after, 100 - initialPercent) }));
+}
