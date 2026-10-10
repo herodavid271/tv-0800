@@ -112,8 +112,12 @@ export function start(api, root) {
     async add(input) {
       const name = input.value.trim().slice(0, 24);
       if (!name) return;
-      const r = await run('add', () => api.addPlayer(name));
-      if (r) { input.value = ''; S.draftName = ''; }
+      // El campo se limpia al instante para poder escribir el siguiente nombre sin esperar a la red;
+      // si el guardado falla, el nombre vuelve al campo (solo si sigue vacío).
+      input.value = ''; S.draftName = '';
+      S.addSeq = (S.addSeq || 0) + 1;
+      const r = await run(`add:${S.addSeq}`, () => api.addPlayer(name));
+      if (!r && !input.value) { input.value = name; S.draftName = name; }
       pollLive(true);
     },
     async reset() {
@@ -324,7 +328,7 @@ export function start(api, root) {
     const box = el('div', 'login');
     const logo = el('img', 'logo');
     logo.src = LOGO; logo.alt = '0800';
-    const msg = el('p', 'nota' + (S.loginMsg ? ' err' : ''), S.loginMsg || 'Solo entran usuarios del Hub con rol Acceso completo. El teléfono te recuerda: no tendrás que repetir esto cada clase.');
+    const msg = el('p', 'nota' + (S.loginMsg ? ' err' : ''), S.loginMsg || 'Solo entran administradores del Hub. El teléfono te recuerda: no tendrás que repetir esto cada clase.');
     msg.setAttribute('role', 'status');
 
     const emailLabel = el('label', 'campo');
