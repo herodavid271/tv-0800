@@ -42,7 +42,7 @@ TV (index.html) --RPC anon tv_live() cada 2 s-+
 
 - **Lectura (rol `anon`)**: `tv_live()` devuelve JSON con `state`, `players` ordenados por puntos descendente y, a igualdad, por quién llegó primero a esos puntos, y `server_time` (el TV usa la hora del servidor para decidir si un punto es reciente, sin depender de su propio reloj).
 - **Escritura (rol `authenticated`, todas fallan con `forbidden` si `tv_is_admin()` es falso)**: `tv_pin(screen)`, `tv_auto()`, `tv_drop(percent)` (1 a 90), `tv_drop_off()`, `tv_player_add(name)`, `tv_player_remove(id)`, `tv_score(player_id)`, `tv_undo()`, `tv_competition_reset()`.
-- `tv_is_admin()`: el usuario de `auth.uid()` tiene un perfil cuyo rol se llama "Acceso completo".
+- La autorización reutiliza `public.is_admin()`, la regla de administrador que ya usa el Hub (perfil con rol `admin` o con un rol de acceso completo a todas las áreas). Hoy son 3 usuarios; dar acceso a otra persona es darle ese rol en el Hub. Una función interna `tv_assert_admin()` la llama y rechaza con `forbidden` si no hay sesión o no cumple.
 
 ## Comportamiento del TV
 
